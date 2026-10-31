@@ -33,7 +33,7 @@ const STORE_CONFIG = {
 const products = [
   {
     id: "hoodie-black-001",
-    name: "Onefournine Essential Hoodie",
+    name: "Onefournine Hoodie · أسود",
     description: "هودي أسود بتصميم عصري وخامة مريحة.",
     image: "hoodie-black-front.jpg",
     images: ["hoodie-black-front.jpg", "hoodie-black-back.jpg"],
@@ -48,7 +48,7 @@ const products = [
   },
   {
     id: "hoodie-gray-001",
-    name: "Onefournine Essential Hoodie",
+    name: "Onefournine Hoodie · رمادي",
     description: "هودي رمادي بخامة ناعمة وقصّة نظيفة.",
     image: "hoodie-gray-front.jpg",
     images: ["hoodie-gray-front.jpg", "hoodie-gray-back.jpg"],
@@ -63,13 +63,13 @@ const products = [
   },
   {
     id: "hoodie-navy-001",
-    name: "Onefournine Essential Hoodie",
-    description: "هودي رمادي vip بجوده عاليه وصناعه ممتازه.",
+    name: "Onefournine Hoodie · VIP رمادي",
+    description: "هودي رمادي VIP بجودة عالية وصناعة ممتازة.",
     image: "hoodie-vip-gray-front.jpg",
     images: ["hoodie-vip-gray-front.jpg", "hoodie-vip-gray-back.jpg"],
     price: 1050,
     discountPrice: 799,
-    colors: [{ name: "رماديvip", value: "#9A9EA0" }],
+    colors: [{ name: "رمادي VIP", value: "#9A9EA0" }],
     sizes: ["S", "M", "L", "XL", "XXL"],
     stock: 20,
     featured: false,
@@ -78,13 +78,13 @@ const products = [
   },
   {
     id: "hoodie-beige-001",
-    name: "Onefournine Essential Hoodie",
-    description: "هودي اسود vip بخامه ممتازه وجوده عالميه .",
+    name: "Onefournine Hoodie · VIP أسود",
+    description: "هودي أسود VIP بخامة ممتازة وجودة عالمية.",
     image: "hoodie-black-vip-front.jpg",
     images: ["hoodie-black-vip-front.jpg", "hoodie-black-vip-back.jpg"],
     price: 1050,
     discountPrice: 799,
-    colors: [{ name: "اسود vip", value: "#08080A" }],
+    colors: [{ name: "أسود VIP", value: "#08080A" }],
     sizes: ["S", "M", "L", "XL", "XXL"],
     stock: 20,
     featured: false,
@@ -565,6 +565,7 @@ async function onSubmit(e) {
 function init() {
   $("#footerText").textContent = STORE_CONFIG.footerText;
   $("#devText").textContent = STORE_CONFIG.developer;
+  $("#year").textContent = new Date().getFullYear();
   [["#igLink", STORE_CONFIG.socialLinks.instagram], ["#ttLink", STORE_CONFIG.socialLinks.tiktok]].forEach(([sel, url]) => {
     const a = $(sel);
     if (/^https?:\/\//.test(url)) a.href = url;
@@ -679,3 +680,9 @@ document.addEventListener("error", (e) => {
     t.src = "images/placeholder.svg";
   }
 }, true);
+
+// iOS Safari يتجاهل user-scalable=no، فنمنع إيماءة القرص (pinch) يدويًا.
+// لا تؤثر على اللمس العادي أو التمرير أو النقر.
+["gesturestart", "gesturechange", "gestureend"].forEach((ev) =>
+  document.addEventListener(ev, (e) => e.preventDefault(), { passive: false })
+);

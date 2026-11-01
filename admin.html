@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0B0B0D">
+<title>Onefournine | لوحة المنتجات</title>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0B0D;--surface:#141417;--fg:#E8E8EA;--muted:#8E9098;--line:#26262B;--jade:#C9CBD2;--emerald:#E9EAEE;--red:#FF8A80}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Readex Pro",Tajawal,Arial,sans-serif;line-height:1.6}
+button,input,textarea{font:inherit;color:inherit}
+input,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px}
+input:focus,textarea:focus{outline:none;border-color:var(--jade)}
+label{display:block;font-size:.85rem;color:var(--muted);margin:14px 0 6px}
+.btn{min-height:48px;padding:0 20px;border:1px solid var(--emerald);border-radius:999px;background:var(--emerald);color:#0B0B0D;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--line)}
+.btn.sm{min-height:38px;padding:0 14px;font-size:.85rem}
+.btn:disabled{opacity:.5}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.bar h1{font-size:1.05rem;margin:0}
+.card{display:grid;grid-template-columns:72px 1fr;gap:12px;padding:12px;margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.card img{width:72px;height:90px;object-fit:cover;border-radius:10px;background:#fff}
+.card h3{margin:0;font-size:.95rem}.card p{margin:2px 0;color:var(--muted);font-size:.85rem}
+.acts{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.tag{display:inline-block;padding:0 8px;border-radius:99px;border:1px solid var(--line);font-size:.75rem;color:var(--muted)}
+.danger{color:var(--red);border-color:var(--line)}
+#editor{position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:20;overscroll-behavior:contain}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-width:48px;min-height:42px;border:1px solid var(--line);border-radius:999px;background:transparent;cursor:pointer}
+.chip.on{background:var(--emerald);color:#0B0B0D;border-color:var(--emerald)}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.row input[type=color]{width:48px;height:44px;padding:2px;flex:none}
+.imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.im{position:relative;aspect-ratio:4/5;border-radius:10px;overflow:hidden;border:2px solid var(--line);background:#fff}
+.im.main{border-color:var(--emerald)}
+.im img{width:100%;height:100%;object-fit:cover}
+.im button{position:absolute;top:4px;inset-inline-start:4px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff}
+.im i{position:absolute;bottom:0;inset-inline:0;background:rgba(0,0,0,.7);color:#fff;font-size:.7rem;text-align:center;font-style:normal;padding:2px}
+.add{display:grid;place-items:center;aspect-ratio:4/5;border:2px dashed var(--line);border-radius:10px;color:var(--muted);cursor:pointer}
+.sw{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.sw input{width:22px;height:22px}
+.err{color:var(--red);min-height:1.4em;font-size:.9rem}
+#toast{position:fixed;bottom:24px;inset-inline:16px;max-width:420px;margin:auto;background:var(--emerald);color:#0B0B0D;padding:12px 16px;border-radius:14px;text-align:center;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+.tabs{display:flex;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.tab{flex:1;min-height:42px;border:1px solid var(--line);border-radius:999px;background:transparent;cursor:pointer}
+.tab.on{background:var(--emerald);color:#0B0B0D;border-color:var(--emerald)}
+.ord{margin-top:12px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.ord h3{margin:0;font-size:.95rem;display:flex;justify-content:space-between;gap:8px}
+.ord p{margin:3px 0;color:var(--muted);font-size:.85rem}
+.ord ul{margin:8px 0;padding-inline-start:18px;font-size:.88rem}
+.ord select{width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:15px;color:inherit}
+.ord a.btn{display:inline-flex;align-items:center;text-decoration:none}
+.badge{background:var(--red);color:#0B0B0D;border-radius:99px;padding:0 7px;font-size:.75rem;margin-inline-start:4px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<section id="login" class="wrap">
+  <h1 style="margin-top:48px">لوحة المنتجات</h1>
+  <label for="em">البريد الإلكتروني</label><input id="em" type="email" autocomplete="username" dir="ltr">
+  <label for="pw">كلمة المرور</label><input id="pw" type="password" autocomplete="current-password" dir="ltr">
+  <p class="err" id="loginErr"></p>
+  <button class="btn" id="loginBtn" style="width:100%">دخول</button>
+</section>
+
+<section id="main" hidden>
+  <div class="bar"><h1>Onefournine · لوحة التحكم</h1><div><button class="btn sm" id="addBtn">+ منتج</button> <button class="btn ghost sm" id="outBtn">خروج</button></div></div>
+  <div class="tabs"><button class="tab on" data-t="products">المنتجات</button><button class="tab" data-t="orders">الطلبات<span class="badge" id="ordBadge" hidden></span></button></div>
+  <div id="pTab">
+  <div class="wrap">
+    <div id="seedBox" hidden><p class="tag" style="display:block;padding:10px">لسه مفيش منتجات محفوظة هنا. استورد المنتجات الحالية في المتجر عشان تقدر تعدّلها.</p><button class="btn ghost" id="seedBtn" style="width:100%">استيراد المنتجات الحالية</button></div>
+    <div id="list"></div>
+  </div>
+  </div>
+  <div id="oTab" hidden><div class="wrap"><button class="btn ghost sm" id="ordRefresh" style="width:100%">تحديث</button><div id="ordList"></div></div></div>
+</section>
+
+<section id="editor" hidden>
+  <div class="bar"><button class="btn ghost sm" id="backBtn">رجوع</button><h1 id="edTitle">منتج جديد</h1><button class="btn sm" id="saveTop">حفظ</button></div>
+  <div class="wrap">
+    <label>اسم المنتج</label><input id="fName">
+    <label>الوصف</label><textarea id="fDesc" rows="3"></textarea>
+    <label>السعر الأصلي (ج.م)</label><input id="fPrice" type="number" inputmode="numeric" min="0">
+    <label>سعر بعد الخصم (اختياري) <span id="pct"></span></label><input id="fDisc" type="number" inputmode="numeric" min="0">
+    <label>المخزون (عدد القطع)</label><input id="fStock" type="number" inputmode="numeric" min="0" value="20">
+    <label>الألوان</label><div id="colors"></div><button class="btn ghost sm" id="addColor" type="button">+ لون</button>
+    <label>المقاسات</label><div class="chips" id="sizes"></div>
+    <label>الصور (الأولى هي الرئيسية)</label><div class="imgs" id="imgs"></div>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+    <div class="sw"><span>منتج مميز</span><input type="checkbox" id="fFeat"></div>
+    <div class="sw"><span>ظاهر في المتجر</span><input type="checkbox" id="fOn" checked></div>
+    <p class="err" id="edErr"></p>
+    <button class="btn" id="saveBtn" style="width:100%">حفظ المنتج</button>
+  </div>
+</section>
+<div id="toast" role="status"></div>
+
+<script>
+/* ===== الإعدادات: الصق قيمك هنا ===== */
+const CFG = { apiKey: "AIzaSyBB6IiTJsuc3okPZINrsayYl6fU1m9fsYY", projectId: "onefournine-64aac", cloudName: "iovw65ju", uploadPreset: "store_upload" };
+/* ==================================== */
+const ALL_SIZES = ["S","M","L","XL","XXL"];
+const SEED = [
+  ["hoodie-black-001","Onefournine Hoodie · أسود","هودي أسود بتصميم عصري وخامة مريحة.","hoodie-black-front.jpg","hoodie-black-back.jpg",950,599,"أسود","#08080A",true],
+  ["hoodie-gray-001","Onefournine Hoodie · رمادي","هودي رمادي بخامة ناعمة وقصّة نظيفة.","hoodie-gray-front.jpg","hoodie-gray-back.jpg",950,599,"رمادي","#9A9EA0",false],
+  ["hoodie-navy-001","Onefournine Hoodie · VIP رمادي","هودي رمادي VIP بجودة عالية وصناعة ممتازة.","hoodie-vip-gray-front.jpg","hoodie-vip-gray-back.jpg",1050,799,"رمادي VIP","#9A9EA0",false],
+  ["hoodie-beige-001","Onefournine Hoodie · VIP أسود","هودي أسود VIP بخامة ممتازة وجودة عالمية.","hoodie-black-vip-front.jpg","hoodie-black-vip-back.jpg",1050,799,"أسود VIP","#08080A",false]
+];
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const money = (n) => Number(n).toLocaleString("ar-EG") + " ج.م";
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove("show"),2600); }
+
+/* ===== Firestore (REST) + تحويل القيم ===== */
+const FS = `https://firestore.googleapis.com/v1/projects/${CFG.projectId}/databases/(default)/documents/products`;
+const enc = (v) => v===null?{nullValue:null}:typeof v==="string"?{stringValue:v}:typeof v==="boolean"?{booleanValue:v}
+  :typeof v==="number"?(Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v}):Array.isArray(v)?{arrayValue:{values:v.map(enc)}}
+  :{mapValue:{fields:Object.fromEntries(Object.entries(v).map(([k,x])=>[k,enc(x)]))}};
+const dec = (f) => "stringValue"in f?f.stringValue:"integerValue"in f?Number(f.integerValue):"doubleValue"in f?f.doubleValue
+  :"booleanValue"in f?f.booleanValue:"nullValue"in f?null:"arrayValue"in f?(f.arrayValue.values||[]).map(dec)
+  :"mapValue"in f?Object.fromEntries(Object.entries(f.mapValue.fields||{}).map(([k,x])=>[k,dec(x)])):null;
+
+/* ===== الدخول ===== */
+let S = null; try { S = JSON.parse(localStorage.getItem("o149_admin")); } catch {}
+const saveS = () => { try { S ? localStorage.setItem("o149_admin", JSON.stringify(S)) : localStorage.removeItem("o149_admin"); } catch {} };
+async function token(){
+  if (!S) throw new Error("login");
+  if (Date.now() > S.exp - 60000) {
+    const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${CFG.apiKey}`, { method:"POST",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:`grant_type=refresh_token&refresh_token=${encodeURIComponent(S.rt)}` });
+    const d = await r.json();
+    if (!r.ok) { S = null; saveS(); throw new Error("login"); }
+    S = { rt:d.refresh_token, idt:d.id_token, exp:Date.now()+Number(d.expires_in)*1000 }; saveS();
+  }
+  return S.idt;
+}
+async function api(path="", opt={}, base=FS){
+  const r = await fetch(base + path, { ...opt, headers:{ Authorization:"Bearer "+await token(), "Content-Type":"application/json" } });
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(d.error?.message || "خطأ " + r.status);
+  return d;
+}
+const toProduct = (doc) => ({ id: doc.name.split("/").pop(), ...Object.fromEntries(Object.entries(doc.fields||{}).map(([k,x])=>[k,dec(x)])) });
+async function listAll(){ const d = await api("?pageSize=300"); return (d.documents||[]).map(toProduct).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)); }
+async function saveDoc(id, data){
+  const mask = Object.keys(data).map((k)=>"updateMask.fieldPaths="+k).join("&");
+  await api(`/${id}?${mask}`, { method:"PATCH", body: JSON.stringify({ fields: Object.fromEntries(Object.entries(data).map(([k,v])=>[k,enc(v)])) }) });
+}
+
+/* ===== رفع الصور (Cloudinary unsigned) ===== */
+async function shrink(file){
+  const b = await createImageBitmap(file), k = Math.min(1, 1600/Math.max(b.width,b.height));
+  const c = document.createElement("canvas"); c.width = Math.round(b.width*k); c.height = Math.round(b.height*k);
+  c.getContext("2d").drawImage(b,0,0,c.width,c.height);
+  return new Promise((r)=>c.toBlob(r,"image/jpeg",.9));
+}
+async function upload(file){
+  const fd = new FormData(); fd.append("file", await shrink(file)); fd.append("upload_preset", CFG.uploadPreset);
+  const r = await fetch(`https://api.cloudinary.com/v1_1/${CFG.cloudName}/image/upload`, { method:"POST", body:fd });
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok || !d.secure_url) throw new Error(d.error?.message || "فشل رفع الصورة");
+  return d.secure_url;
+}
+
+/* ===== القائمة ===== */
+let items = [];
+async function refresh(){
+  try { items = await listAll(); } catch (e) { if (e.message==="login") return showLogin(); toast("تعذّر تحميل المنتجات: "+e.message); return; }
+  $("#seedBox").hidden = items.length > 0;
+  $("#list").innerHTML = items.map((p)=>`
+    <div class="card" data-id="${esc(p.id)}">
+      <img src="${esc((p.images||[])[0]||"")}" alt="" onerror="this.style.visibility='hidden'">
+      <div><h3>${esc(p.name)}</h3>
+        <p>${p.discountPrice!=null&&p.discountPrice<p.price?`<s>${money(p.price)}</s> <b style="color:var(--fg)">${money(p.discountPrice)}</b>`:money(p.price)} · مخزون ${esc(p.stock)}</p>
+        ${p.active===false?'<span class="tag">مخفي</span>':""} ${p.featured?'<span class="tag">مميز</span>':""}
+        <div class="acts"><button class="btn ghost sm" data-a="edit">تعديل</button>
+          <button class="btn ghost sm" data-a="vis">${p.active===false?"إظهار":"إخفاء"}</button>
+          <button class="btn ghost sm danger" data-a="del">حذف</button></div></div>
+    </div>`).join("");
+}
+$("#list").addEventListener("click", async (e)=>{
+  const b = e.target.closest("button[data-a]"); if (!b) return;
+  const p = items.find((x)=>x.id===b.closest("[data-id]").dataset.id); if (!p) return;
+  if (b.dataset.a==="edit") return openEditor(p);
+  b.disabled = true;
+  try {
+    if (b.dataset.a==="vis") { await saveDoc(p.id,{ active: p.active===false }); toast(p.active===false?"ظهر في المتجر":"اتخفى من المتجر"); }
+    if (b.dataset.a==="del" && confirm(`حذف "${p.name}" نهائيًا؟`)) { await api("/"+p.id,{method:"DELETE"}); toast("اتحذف"); }
+  } catch (er) { toast("حصل خطأ: "+er.message); }
+  refresh();
+});
+$("#seedBtn").addEventListener("click", async (e)=>{
+  e.target.disabled = true;
+  try {
+    for (const [i,[id,name,desc,a,b,price,disc,cn,cv,feat]] of SEED.entries())
+      await saveDoc(id,{ name, description:desc, images:[a,b], price, discountPrice:disc, stock:20, featured:feat, active:true,
+        colors:[{name:cn,value:cv}], sizes:ALL_SIZES, createdAt: Date.now()-i });
+    toast("تم الاستيراد");
+  } catch (er) { toast("حصل خطأ: "+er.message); }
+  e.target.disabled = false; refresh();
+});
+
+/* ===== المحرر ===== */
+let E = null;
+function openEditor(p){
+  E = { id: p?.id || "p-"+Date.now().toString(36), createdAt: p?.createdAt || Date.now(),
+    imgs: (p?.images||[]).map((u)=>({url:u,prev:u})), colors: (p?.colors||[{name:"",value:"#08080A"}]).map((c)=>({...c})),
+    sizes: new Set(p?.sizes || ALL_SIZES), extra: p ? { unavailableColors:p.unavailableColors||[], unavailableSizes:p.unavailableSizes||[] } : {} };
+  $("#edTitle").textContent = p ? "تعديل المنتج" : "منتج جديد";
+  $("#fName").value = p?.name||""; $("#fDesc").value = p?.description||""; $("#fPrice").value = p?.price??"";
+  $("#fDisc").value = p?.discountPrice??""; $("#fStock").value = p?.stock??20;
+  $("#fFeat").checked = !!p?.featured; $("#fOn").checked = p?.active!==false; $("#edErr").textContent = "";
+  drawColors(); drawSizes(); drawImgs(); pct();
+  $("#editor").hidden = false; $("#editor").scrollTop = 0; document.body.style.overflow = "hidden";
+}
+function closeEditor(){ $("#editor").hidden = true; document.body.style.overflow = ""; E = null; }
+function pct(){ const a=+$("#fPrice").value, b=+$("#fDisc").value; $("#pct").textContent = a&&b&&b<a ? `(-${Math.round((1-b/a)*100)}%)` : ""; }
+["#fPrice","#fDisc"].forEach((s)=>$(s).addEventListener("input",pct));
+function drawColors(){
+  $("#colors").innerHTML = E.colors.map((c,i)=>`<div class="row"><input type="color" value="${esc(c.value)}" data-ci="${i}" data-k="value">
+    <input placeholder="اسم اللون (مثال: أسود)" value="${esc(c.name)}" data-ci="${i}" data-k="name">
+    ${E.colors.length>1?`<button class="btn ghost sm" data-rc="${i}" type="button">×</button>`:""}</div>`).join("");
+}
+$("#colors").addEventListener("input",(e)=>{ const t=e.target; if (t.dataset.ci!=null) E.colors[+t.dataset.ci][t.dataset.k]=t.value; });
+$("#colors").addEventListener("click",(e)=>{ const b=e.target.closest("[data-rc]"); if(b){ E.colors.splice(+b.dataset.rc,1); drawColors(); } });
+$("#addColor").addEventListener("click",()=>{ E.colors.push({name:"",value:"#08080A"}); drawColors(); });
+function drawSizes(){ $("#sizes").innerHTML = ALL_SIZES.map((z)=>`<button type="button" class="chip ${E.sizes.has(z)?"on":""}" data-z="${z}">${z}</button>`).join(""); }
+$("#sizes").addEventListener("click",(e)=>{ const b=e.target.closest("[data-z]"); if(!b) return; E.sizes.has(b.dataset.z)?E.sizes.delete(b.dataset.z):E.sizes.add(b.dataset.z); drawSizes(); });
+function drawImgs(){
+  $("#imgs").innerHTML = E.imgs.map((m,i)=>`<div class="im ${i===0?"main":""}"><img src="${esc(m.prev)}" alt="" data-main="${i}">
+    <button type="button" data-ri="${i}" aria-label="حذف">×</button>${i===0?"<i>الرئيسية</i>":"<i>اضغط للرئيسية</i>"}</div>`).join("")
+    + (E.imgs.length<6?'<div class="add" id="addImg">+ صورة</div>':"");
+}
+$("#imgs").addEventListener("click",(e)=>{
+  if (e.target.closest("#addImg")) return $("#file").click();
+  const r = e.target.closest("[data-ri]"); if (r) { E.imgs.splice(+r.dataset.ri,1); return drawImgs(); }
+  const m = e.target.closest("[data-main]"); if (m && +m.dataset.main>0) { E.imgs.unshift(...E.imgs.splice(+m.dataset.main,1)); drawImgs(); }
+});
+$("#file").addEventListener("change",(e)=>{
+  [...e.target.files].slice(0,6-E.imgs.length).forEach((f)=>E.imgs.push({file:f,prev:URL.createObjectURL(f)}));
+  e.target.value = ""; drawImgs();
+});
+
+async function save(){
+  const name=$("#fName").value.trim(), price=+$("#fPrice").value, discRaw=$("#fDisc").value.trim(), disc=discRaw===""?null:+discRaw;
+  const colors=E.colors.map((c)=>({name:c.name.trim(),value:c.value})).filter((c)=>c.name);
+  const err = name.length<3 ? "اكتب اسم المنتج." : !(price>0) ? "اكتب السعر الأصلي." : disc!==null&&!(disc>0&&disc<price) ? "سعر الخصم لازم يكون أقل من السعر الأصلي."
+    : !colors.length ? "أضف لونًا واحدًا على الأقل." : !E.sizes.size ? "اختر مقاسًا واحدًا على الأقل." : !E.imgs.length ? "أضف صورة واحدة على الأقل." : "";
+  $("#edErr").textContent = err; if (err) return;
+  const btns = [$("#saveBtn"),$("#saveTop")]; btns.forEach((b)=>b.disabled=true);
+  try {
+    const urls = []; let n = 0; const total = E.imgs.filter((m)=>m.file).length;
+    for (const m of E.imgs) {
+      if (m.file && !m.url) { $("#saveBtn").textContent = `رفع الصور ${++n} من ${total}...`; m.url = await upload(m.file); }
+      urls.push(m.url);
+    }
+    $("#saveBtn").textContent = "جاري الحفظ...";
+    await saveDoc(E.id, { name, description:$("#fDesc").value.trim(), price, discountPrice:disc, stock:Math.max(0,Math.floor(+$("#fStock").value||0)),
+      featured:$("#fFeat").checked, active:$("#fOn").checked, colors, sizes:ALL_SIZES.filter((z)=>E.sizes.has(z)), images:urls,
+      unavailableColors:E.extra.unavailableColors||[], unavailableSizes:E.extra.unavailableSizes||[], createdAt:E.createdAt });
+    toast("تم الحفظ"); closeEditor(); refresh();
+  } catch (er) { $("#edErr").textContent = er.message==="login" ? "انتهت الجلسة، سجّل الدخول من جديد." : "تعذّر الحفظ: "+er.message; }
+  btns.forEach((b)=>b.disabled=false); $("#saveBtn").textContent = "حفظ المنتج";
+}
+$("#saveBtn").addEventListener("click",save); $("#saveTop").addEventListener("click",save);
+$("#backBtn").addEventListener("click",closeEditor); $("#addBtn").addEventListener("click",()=>openEditor(null));
+
+/* ===== الطلبات ===== */
+const FSO = FS.replace(/\/products$/, "/orders");
+const STATUSES = ["في انتظار مراجعة الدفع","تم تأكيد الدفع","جاري التجهيز","تم التسليم","ملغي"];
+const waNum = (p) => { let d = String(p||"").replace(/\D/g,""); if (d.startsWith("00")) d = d.slice(2); else if (d.startsWith("0")) d = "20"+d.slice(1); return d; };
+let orders = [];
+async function refreshOrders(){
+  try {
+    const d = await api("?pageSize=300", {}, FSO);
+    orders = (d.documents||[]).map(toProduct).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  } catch (e) { if (e.message==="login") return showLogin(); $("#ordList").innerHTML = '<p class="err">تعذّر تحميل الطلبات: '+esc(e.message)+' (تأكد إنك حدّثت الـ Rules)</p>'; return; }
+  const pending = orders.filter((o)=>o.status===STATUSES[0]).length;
+  $("#ordBadge").hidden = !pending; $("#ordBadge").textContent = pending;
+  $("#ordList").innerHTML = orders.length ? orders.map((o)=>`
+    <div class="ord" data-id="${esc(o.id)}">
+      <h3><span>${esc(o.name)}</span><span style="color:var(--fg)">${money(o.total||0)}</span></h3>
+      <p>${esc(o.ref)} · ${esc(new Date(o.createdAt||0).toLocaleString("ar-EG"))}</p>
+      <p dir="ltr" style="text-align:right">${esc(o.phone)}</p>
+      ${o.printName?`<p>الاسم للطباعة: <b style="color:var(--fg)">${esc(o.printName)}</b></p>`:""}
+      <ul>${(o.items||[]).map((i)=>`<li>${esc(i.name)} · ${esc(i.color)} · ${esc(i.size)} · × ${esc(i.qty)}</li>`).join("")}</ul>
+      <p>الدفع: ${esc(o.payment)}${o.proofUrl?` · <a href="${esc(o.proofUrl)}" target="_blank" rel="noopener" style="color:var(--fg)">صورة الإثبات</a>`:" · لا يوجد إثبات مرفق"}</p>
+      <select data-st>${STATUSES.map((s)=>`<option ${s===o.status?"selected":""}>${s}</option>`).join("")}</select>
+      <div class="acts"><a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/${waNum(o.phone)}">واتساب العميل</a>
+        <button class="btn ghost sm danger" data-del>حذف</button></div>
+    </div>`).join("") : '<p class="tag" style="display:block;padding:10px;margin-top:12px">مفيش طلبات لسه.</p>';
+}
+$("#ordList").addEventListener("change", async (e)=>{
+  const sel = e.target.closest("select[data-st]"); if (!sel) return;
+  const id = sel.closest("[data-id]").dataset.id;
+  try { await api(`/${id}?updateMask.fieldPaths=status`, { method:"PATCH", body: JSON.stringify({ fields:{ status: enc(sel.value) } }) }, FSO); toast("تم تحديث الحالة"); }
+  catch (er) { toast("حصل خطأ: "+er.message); }
+  refreshOrders();
+});
+$("#ordList").addEventListener("click", async (e)=>{
+  const b = e.target.closest("button[data-del]"); if (!b) return;
+  const o = orders.find((x)=>x.id===b.closest("[data-id]").dataset.id); if (!o || !confirm(`حذف طلب ${o.name} نهائيًا؟`)) return;
+  try { await api("/"+o.id, { method:"DELETE" }, FSO); toast("اتحذف"); } catch (er) { toast("حصل خطأ: "+er.message); }
+  refreshOrders();
+});
+$("#ordRefresh").addEventListener("click", refreshOrders);
+document.querySelector(".tabs").addEventListener("click", (e)=>{
+  const t = e.target.closest(".tab"); if (!t) return;
+  document.querySelectorAll(".tab").forEach((x)=>x.classList.toggle("on", x===t));
+  const isOrd = t.dataset.t==="orders";
+  $("#pTab").hidden = isOrd; $("#oTab").hidden = !isOrd; $("#addBtn").hidden = isOrd;
+  if (isOrd) refreshOrders();
+});
+
+/* ===== تسجيل الدخول والخروج ===== */
+function showLogin(){ $("#main").hidden=true; $("#login").hidden=false; closeEditor(); }
+function showMain(){ $("#login").hidden=true; $("#main").hidden=false; refresh(); refreshOrders(); }
+$("#loginBtn").addEventListener("click", async ()=>{
+  const b=$("#loginBtn"); b.disabled=true; $("#loginErr").textContent="";
+  try {
+    const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${CFG.apiKey}`, { method:"POST",
+      headers:{"Content-Type":"application/json"}, body:JSON.stringify({ email:$("#em").value.trim(), password:$("#pw").value, returnSecureToken:true }) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(/INVALID|EMAIL|PASSWORD/.test(d.error?.message||"") ? "البريد أو كلمة المرور غلط." : "تعذّر الدخول. راجع إعدادات Firebase.");
+    S = { rt:d.refreshToken, idt:d.idToken, exp:Date.now()+Number(d.expiresIn)*1000 }; saveS(); $("#pw").value=""; showMain();
+  } catch (e) { $("#loginErr").textContent = e.message; }
+  b.disabled=false;
+});
+$("#outBtn").addEventListener("click",()=>{ S=null; saveS(); showLogin(); });
+if (!CFG.apiKey || !CFG.projectId || !CFG.cloudName || !CFG.uploadPreset) $("#loginErr").textContent = "أكمل الإعدادات (CFG) في أعلى السكريبت أولًا.";
+if (S) showMain();
+</script>
+</body>
+</html>

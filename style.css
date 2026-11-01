@@ -613,3 +613,109 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 /* 5) iOS: لا تكبير تلقائي للحقول (16px كحد أدنى) */
 input, textarea, select { font-size: 16px; }
+
+/* ==========================================================
+   QUICK VIEW: نافذة تفاصيل المنتج (خلفية ضبابية + علامة مائية + حركات)
+   ========================================================== */
+body.pd-lock { overflow: hidden; }
+
+#productDialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: transparent;
+}
+#productDialog[open] { display: grid; place-items: center; }
+
+/* تغبيش الصفحة وتعتيمها على ::backdrop (طبقة منفصلة تحت البطاقة والعلامة المائية) */
+#productDialog::backdrop {
+  background: rgba(6, 6, 8, 0.58);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+#productDialog[open]::backdrop { animation: pdBgIn 0.3s ease-out both; }
+
+/* علامة Onefournine المائية: فوق الضبابية وتحت البطاقة، بنسبتها الأصلية */
+#productDialog::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("logo-brand-black.png") center / min(80vw, 520px) auto no-repeat;
+  filter: brightness(0) invert(1);
+  opacity: 0.13;
+  pointer-events: none;
+  animation: pdLogoIn 0.45s ease-out both;
+}
+
+#productDetail {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 24px);
+  max-width: 460px;
+  max-height: calc(100% - 24px);
+  padding: 22px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* بطاقة زجاجية: شفافة فوق خلفية مغبّشة أصلًا (بدون غبش ثاني عشان الأداء) */
+  background: rgba(22, 22, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  animation: pdCardIn 0.32s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+#productDialog.is-closing::backdrop { animation: pdBgOut 0.22s ease-in both; }
+#productDialog.is-closing::before { animation: pdLogoOut 0.22s ease-in both; }
+#productDialog.is-closing #productDetail { animation: pdCardOut 0.22s ease-in both; }
+
+/* زر إغلاق ثابت أعلى البطاقة */
+.pd-close-wrap { position: sticky; top: 0; z-index: 3; height: 0; display: flex; justify-content: flex-start; }
+.pd-close {
+  width: 40px; height: 40px;
+  margin: -8px -8px 0 -8px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 50%;
+  background: rgba(11, 11, 13, 0.78);
+  color: var(--fg); font-size: 1.5rem; line-height: 1; cursor: pointer;
+}
+
+/* صورة أصغر قليلًا، في المنتصف، بنسبتها الأصلية */
+#productDetail .d-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 86%;
+  max-height: 44vh;
+  max-height: 44dvh;
+  aspect-ratio: auto;
+  object-fit: contain;
+  margin: 8px auto 14px;
+  border-radius: var(--radius);
+  background: #fff;
+}
+#productDetail .thumbs { width: fit-content; max-width: 100%; margin: 0 auto 14px; }
+#productDetail h2, #productDetail .desc { overflow-wrap: anywhere; }
+
+.media { cursor: pointer; }
+
+@keyframes pdBgIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pdBgOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes pdLogoIn  { from { opacity: 0; } to { opacity: 0.13; } }
+@keyframes pdLogoOut { from { opacity: 0.13; } to { opacity: 0; } }
+@keyframes pdCardIn  { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes pdCardOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px) scale(0.97); } }
+
+/* متصفحات بدون backdrop-filter: خلفية أغمق بدل الضبابية */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  #productDialog::backdrop { background: rgba(6, 6, 8, 0.86); }
+}

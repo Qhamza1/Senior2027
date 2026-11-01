@@ -17,6 +17,8 @@ const STORE_CONFIG = {
   ordersEndpoint: "",   // مثال: "https://your-server.com/api/orders"
   uploadEndpoint: "",   // مثال: "https://your-server.com/api/upload" (يرجع { url })
   maxProofMB: 5,
+  // اتركهم فارغين = المتجر يستخدم قايمة المنتجات الموجودة تحت في الملف فقط
+  firebase: { projectId: "onefournine-64aac", apiKey: "AIzaSyBB6IiTJsuc3okPZINrsayYl6fU1m9fsYY" },
   payments: {
     instapay: { label: "Instapay", type: "egp", value: "hamzayousry12@instapay", recipient: "حمزه" },
     vodafone: { label: "Vodafone Cash", type: "egp", value: "01066350362", recipient: "حمزه" }
@@ -30,7 +32,7 @@ const STORE_CONFIG = {
    المنتجات — عدّل من هنا
    ملاحظة: البيانات تجريبية. الأسعار والمخزون والصور ليست نهائية.
    ========================================================== */
-const products = [
+const LOCAL_PRODUCTS = [
   {
     id: "hoodie-black-001",
     name: "Onefournine Hoodie · أسود",
@@ -92,6 +94,50 @@ const products = [
     unavailableSizes: []
   }
 ];
+
+/* ==========================================================
+   منتجات الداشبورد (Firestore REST بدون مكتبات) مع نسخة محفوظة وبديل محلي
+   ========================================================== */
+const PRODUCTS_CACHE = "onefournine_products_v1";
+let products = (() => {
+  try { const c = JSON.parse(localStorage.getItem(PRODUCTS_CACHE)); if (Array.isArray(c) && c.length) return c; } catch { /* لا نسخة */ }
+  return LOCAL_PRODUCTS;
+})();
+const imgUrl = (s, w) => /res\.cloudinary\.com\/.+\/image\/upload\//.test(s) ? s.replace("/image/upload/", `/image/upload/f_auto,q_auto,w_${w}/`) : s;
+const fsDec = (f) => "stringValue" in f ? f.stringValue : "integerValue" in f ? Number(f.integerValue) : "doubleValue" in f ? f.doubleValue
+  : "booleanValue" in f ? f.booleanValue : "nullValue" in f ? null : "arrayValue" in f ? (f.arrayValue.values || []).map(fsDec)
+  : "mapValue" in f ? Object.fromEntries(Object.entries(f.mapValue.fields || {}).map(([k, x]) => [k, fsDec(x)])) : null;
+async function fetchRemoteProducts() {
+  const c = STORE_CONFIG.firebase;
+  if (!c?.projectId) return null;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    const r = await fetch(`https://firestore.googleapis.com/v1/projects/${c.projectId}/databases/(default)/documents/products?pageSize=300&key=${c.apiKey}`, { signal: ctrl.signal });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return (d.documents || []).map((doc) => {
+      const o = Object.fromEntries(Object.entries(doc.fields || {}).map(([k, x]) => [k, fsDec(x)]));
+      return { unavailableColors: [], unavailableSizes: [], colors: [], sizes: [], stock: 0, discountPrice: null, ...o, id: doc.name.split("/").pop(), image: (o.images || [])[0] };
+    }).filter((p) => p.active !== false && p.image && p.name && p.price > 0 && p.colors.length && p.sizes.length)
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  } catch { return null; } finally { clearTimeout(timer); }
+}
+async function syncProducts() {
+  const list = await fetchRemoteProducts();
+  if (!list?.length || JSON.stringify(list) === JSON.stringify(products)) return;  // فشل/فاضي/مفيش جديد: لا تغيير
+  products = list;
+  try { localStorage.setItem(PRODUCTS_CACHE, JSON.stringify(list)); } catch { /* تخزين غير متاح */ }
+  cart = cart.filter((i) => findProduct(i.id));
+  saveCart();
+  const rail = $("#productGrid"), x = rail.scrollLeft;
+  rail.style.scrollBehavior = "auto";
+  renderProducts();
+  rail.scrollLeft = x;
+  rail.style.scrollBehavior = "";
+  renderCart();
+  if ($("#productDialog").open && !findProduct(detail?.id)) closeDetail();
+}
 
 /* ==========================================================
    أدوات مساعدة
@@ -202,7 +248,7 @@ function renderCart() {
         if (!p) return "";
         return `
         <div class="cart-item">
-          <img src="${p.image}" alt="${p.name}" onerror="${FALLBACK_IMG}">
+          <img src="${imgUrl(p.image, 200)}" alt="${p.name}" onerror="${FALLBACK_IMG}">
           <div class="ci-info">
             <b>${p.name}</b>
             <span>اللون: ${i.color} · المقاس: ${i.size}</span>
@@ -238,7 +284,7 @@ function cardHTML(p) {
   return `
   <article class="card" data-id="${p.id}">
     <div class="media">
-      <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="${FALLBACK_IMG}">
+      <img src="${imgUrl(p.image, 700)}" alt="${p.name}" loading="lazy" onerror="${FALLBACK_IMG}">
       ${d ? `<span class="badge">-${d}%</span>` : ""}
     </div>
     <div class="body">
@@ -276,10 +322,26 @@ function renderProducts() {
    تفاصيل المنتج
    ========================================================== */
 function openDetail(id) {
+  const dlg = $("#productDialog");
+  if (dlg.open || !findProduct(id)) return;
   const pk = pickOf(findProduct(id));
   detail = { id, color: pk.color, size: pk.size, qty: 1, img: 0 };
   renderDetail();
-  $("#productDialog").showModal();
+  document.body.classList.add("pd-lock");   // يمنع تمرير الصفحة خلف النافذة
+  dlg.showModal();
+  $("#productDetail").scrollTop = 0;
+  (findProduct(id).images || []).forEach((src) => { new Image().src = src; });
+}
+// إغلاق بحركة ناعمة ثم إغلاق الـ dialog فعليًا
+function closeDetail() {
+  const dlg = $("#productDialog");
+  if (!dlg.open || dlg.classList.contains("is-closing")) return;
+  dlg.classList.add("is-closing");
+  clearTimeout(closeDetail.timer);
+  closeDetail.timer = setTimeout(() => {
+    dlg.classList.remove("is-closing");
+    dlg.close();
+  }, 220);
 }
 function renderDetail() {
   const p = findProduct(detail.id);
@@ -287,10 +349,11 @@ function renderDetail() {
   const imgs = p.images?.length ? p.images : [p.image];
   const idx = Math.min(detail.img || 0, imgs.length - 1);
   $("#productDetail").innerHTML = `
-    <img class="d-img" src="${imgs[idx]}" alt="${p.name}" onerror="${FALLBACK_IMG}">
+    <div class="pd-close-wrap"><button type="button" class="pd-close" data-close aria-label="إغلاق">×</button></div>
+    <img class="d-img" src="${imgUrl(imgs[idx], 900)}" alt="${p.name}" onerror="${FALLBACK_IMG}">
     ${imgs.length > 1 ? `<div class="thumbs">${imgs.map((src, i) => `
       <button type="button" class="thumb ${i === idx ? "on" : ""}" data-d="img" data-v="${i}" aria-label="صورة ${i + 1}">
-        <img src="${src}" alt="">
+        <img src="${imgUrl(src, 160)}" alt="">
       </button>`).join("")}</div>` : ""}
     <h2>${p.name}</h2>
     <p class="desc">${p.description}</p>
@@ -518,6 +581,31 @@ async function postOrder(order) {
   if (!res.ok) throw new Error("تعذّر حفظ الطلب على الخادم. لم يتم مسح السلة، حاول مرة أخرى.");
 }
 
+/* حفظ الطلب في Firestore ليظهر في لوحة التحكم (لو فشل، الطلب يكمل على واتساب) */
+const fsEnc = (v) => v === null || v === undefined ? { nullValue: null }
+  : typeof v === "string" ? { stringValue: v }
+  : typeof v === "boolean" ? { booleanValue: v }
+  : typeof v === "number" ? (Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v })
+  : Array.isArray(v) ? { arrayValue: { values: v.map(fsEnc) } }
+  : { mapValue: { fields: Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fsEnc(x)])) } };
+
+async function saveOrderToFirestore(o) {
+  const c = STORE_CONFIG.firebase;
+  if (!c?.projectId || !c?.apiKey) return;
+  const doc = {
+    ref: o.ref, createdAt: Date.now(), name: o.customer.name, phone: o.customer.phone,
+    printName: o.customer.printName || "", total: o.total, payment: o.payment.label,
+    recipient: o.payment.recipient || "", status: o.status, proofUrl: o.proofUrl || "",
+    items: o.items.map((i) => ({ name: i.name, color: i.color, size: i.size, qty: i.qty, unitPrice: i.unitPrice }))
+  };
+  const url = `https://firestore.googleapis.com/v1/projects/${c.projectId}/databases/(default)/documents/orders?documentId=${encodeURIComponent(o.ref)}&key=${c.apiKey}`;
+  const res = await fetchWithTimeout(url, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fields: Object.fromEntries(Object.entries(doc).map(([k, v]) => [k, fsEnc(v)])) })
+  });
+  if (!res.ok) throw new Error("order-save-failed");
+}
+
 async function onSubmit(e) {
   e.preventDefault();
   setErr("");
@@ -543,6 +631,7 @@ async function onSubmit(e) {
       try { order.proofUrl = await uploadProof(); } catch { order.proofUrl = null; }
     }
     if (STORE_CONFIG.ordersEndpoint) await postOrder(order);
+    try { await saveOrderToFirestore(order); } catch {}
     const url = waURL(order);
     cart = [];
     saveCart();
@@ -574,6 +663,7 @@ function init() {
 
   renderProducts();
   renderCart();
+  syncProducts();
   const rail = $("#productGrid");
   const step = () => (rail.querySelector(".card")?.offsetWidth || 300) + 16;
   $("#railNext").addEventListener("click", () => rail.scrollBy({ left: -step(), behavior: "smooth" }));
@@ -588,12 +678,13 @@ function init() {
   });
 
   $("#productGrid").addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-act]");
+    // الضغط على صورة المنتج (.media) يفتح التفاصيل مثل زر "عرض التفاصيل"
+    const b = e.target.closest("button[data-act], .media");
     if (!b) return;
     const id = b.closest("[data-id]").dataset.id;
     const p = findProduct(id);
     const pk = pickOf(p);
-    switch (b.dataset.act) {
+    switch (b.dataset.act || "details") {
       case "color": pk.color = b.dataset.v; break;
       case "size": pk.size = b.dataset.v; break;
       case "add": addToCart(id, pk.color, pk.size); return;
@@ -616,7 +707,7 @@ function init() {
       case "img": detail.img = Number(b.dataset.v); break;
       case "dec": detail.qty = Math.max(1, detail.qty - 1); break;
       case "add":
-        if (addToCart(p.id, detail.color, detail.size, detail.qty)) $("#productDialog").close();
+        if (addToCart(p.id, detail.color, detail.size, detail.qty)) closeDetail();
         return;
     }
     renderDetail();
@@ -663,10 +754,21 @@ function init() {
   $("#orderForm").addEventListener("submit", onSubmit);
 
 
+  // نافذة التفاصيل: إغلاق بالضغط خارج البطاقة أو بزر Esc/رجوع الأندرويد، وفك قفل التمرير
+  const pDlg = $("#productDialog");
+  pDlg.addEventListener("click", (e) => { if (e.target === pDlg) closeDetail(); });
+  pDlg.addEventListener("cancel", (e) => { e.preventDefault(); closeDetail(); });
+  pDlg.addEventListener("close", () => {
+    document.body.classList.remove("pd-lock");
+  });
+
   // أزرار الإغلاق
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-close]");
-    if (b) b.closest("dialog")?.close();
+    if (!b) return;
+    const dlg = b.closest("dialog");
+    if (dlg?.id === "productDialog") closeDetail();
+    else dlg?.close();
   });
 }
 

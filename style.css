@@ -444,3 +444,14 @@ input[type="file"] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ===== شريط تنزيل التطبيق ===== */
+.install-bar { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: 10px; padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px; background: var(--surface-2); border-bottom: 1px solid var(--line-strong); box-shadow: 0 6px 20px rgba(0,0,0,.5); animation: ibIn .45s var(--ease); }
+.install-bar[hidden] { display: none; }
+.install-bar img { border-radius: 9px; flex: none; }
+.ib-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.ib-text strong { font-size: .86rem; color: var(--fg); }
+.ib-text span { font-size: .72rem; color: var(--muted); }
+.ib-btn { flex: none; border: 0; border-radius: 999px; padding: 8px 18px; font: 700 .82rem var(--font); background: var(--fg); color: #080808; cursor: pointer; }
+.ib-close { flex: none; border: 0; background: transparent; color: var(--muted); font-size: 1.5rem; line-height: 1; padding: 4px 6px; cursor: pointer; }
+@keyframes ibIn { from { transform: translateY(-100%); opacity: 0; } to { transform: none; opacity: 1; } }

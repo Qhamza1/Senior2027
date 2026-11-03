@@ -1,8 +1,8 @@
-const CACHE = "onefournine-v1";
-const CORE = ["./", "index.html", "style.css", "script.js", "icons/icon-192.png", "icons/icon-512.png"];
+const CACHE = "onefournine-v2";
+const CORE = ["./", "index.html", "style.css", "script.js", "pwa.js", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(CORE.map((u) => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (e) => {

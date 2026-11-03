@@ -2,125 +2,165 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0B0B0D">
-  <meta name="description" content="Onefournine: هوديز وقطع بتصميم نظيف وخامة مريحة.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
+  <meta name="description" content="Onefournine: هوديز Senior 2027 بتصميم نظيف وخامة مريحة.">
   <title>Onefournine | 149</title>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Onefournine">
+  <meta property="og:title" content="Onefournine | 149">
+  <meta property="og:description" content="Onefournine: هوديز Senior 2027 بتصميم نظيف وخامة مريحة.">
+  <meta property="og:url" content="https://onefournine.vercel.app/">
+  <meta property="og:locale" content="ar_EG">
+  <meta property="og:image" content="https://onefournine.vercel.app/og-image.jpg">
+  <meta property="og:image:secure_url" content="https://onefournine.vercel.app/og-image.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://onefournine.vercel.app/og-image.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="announce">خصم ٣٧٪ على هوديز Senior 2027 . الدفع بفودافون كاش أو InstaPay.</div>
+<div class="announce">خصم حتى ٣٧٪ · الدفع بفودافون كاش أو InstaPay</div>
 
-<header class="topbar">
-  <a href="#top" class="brand" aria-label="الرئيسية"><img class="logo-head" src="logo-brand-black.png" alt="Onefournine Logo" width="790" height="520"></a>
-  <button class="cart-btn" id="cartBtn" aria-label="سلة المشتريات">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
-    <span>السلة</span>
-    <span id="cartCount" class="count">0</span>
-  </button>
-  <nav class="nav" aria-label="التنقل">
+<header class="topbar" id="topbar">
+  <div class="bar wrap">
+    <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="القائمة" aria-expanded="false" aria-controls="mobileNav">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+    </button>
+    <a href="#top" class="brand" aria-label="Onefournine - الرئيسية"><img class="logo-head" src="logo-brand-black.png" alt="Onefournine" width="790" height="520"></a>
+    <nav class="nav" aria-label="التنقل">
+      <a href="#products">المنتجات</a>
+      <a href="#how">طريقة الطلب</a>
+      <a href="#faq">أسئلة شائعة</a>
+    </nav>
+    <button class="cart-btn" id="cartBtn" type="button" aria-label="سلة المشتريات">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      <span id="cartCount" class="count is-empty" aria-hidden="true">0</span>
+    </button>
+  </div>
+  <nav class="mnav" id="mobileNav" aria-label="قائمة الموبايل" hidden>
     <a href="#products">المنتجات</a>
     <a href="#how">طريقة الطلب</a>
+    <a href="#faq">أسئلة شائعة</a>
   </nav>
 </header>
 
 <main id="top">
-  <section class="hero">
-    <div class="hero-media">
-      <img src="package.jpg" alt="علبة Onefournine Senior 2027"
-           onerror="this.onerror=null;this.src='logo.png'">
-    </div>
-    <div class="hero-text">
-      <p class="kicker">Senior 2027 · الدفعة بتاعتنا</p>
-      <h1>آخر سنة. أحلى ذكرى.</h1>
-      <p class="lead">هودي الدفعة بخامة مريحة، تلبسه مع صحابك وتفتكر بيه أحلى سنة. تقدر كمان تطبع اسمك عليه.</p>
-      <div class="hero-actions">
-        <a class="btn" href="#products">اطلب هوديك دلوقتي</a>
-        <a class="btn ghost" href="#how">إزاي أطلب؟</a>
+  <section class="hero" aria-label="Senior 2027">
+    <div class="hero-card">
+      <img class="hero-img" src="package.jpg" alt="علبة Onefournine Senior 2027" fetchpriority="high" onerror="this.onerror=null;this.src='logo.png'">
+      <div class="hero-text">
+        <p class="kicker">Senior 2027 · الدفعة بتاعتنا</p>
+        <h1>آخر سنة.<br>أحلى ذكرى.</h1>
+        <p class="lead">هودي الدفعة بخامة مريحة. البسه مع صحابك وتقدر تطبع اسمك عليه.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#products">اكتشف المجموعة</a>
+          <a class="btn ghost glass" href="#how">طريقة الطلب</a>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="products" id="products">
-    <div class="section-head">
-      <div>
-        <h2>اكتشف تصميمك</h2>
-        <p>اختار اللون والتصميم اللي يعبر عنك.</p>
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <h2>اكتشف تصميمك</h2>
+          <p class="sub">اختار الهودي اللي يعبر عنك.</p>
+        </div>
+        <span class="count-note" id="prodCount" aria-hidden="true"></span>
       </div>
-      <div class="filters">
-        <button class="chip active" data-filter="all">الكل</button>
-        <button class="chip" data-filter="featured">المميز</button>
-      </div>
+      <div class="grid" id="productGrid"></div>
     </div>
-    <div class="rail-nav">
-      <button id="railPrev" aria-label="السابق">›</button>
-      <button id="railNext" aria-label="التالي">‹</button>
-    </div>
-    <div class="rail" id="productGrid"></div>
   </section>
 
   <section class="how" id="how">
-    <h2>طريقة الطلب</h2>
-    <div class="steps-grid">
-      <div><span class="step-n">١</span><p>اختار المنتج واللون والمقاس وأضفه للسلة.</p></div>
-      <div><span class="step-n">٢</span><p>حوّل المبلغ على فودافون كاش أو InstaPay.</p></div>
-      <div><span class="step-n">٣</span><p>ارفع صورة إثبات التحويل واضغط "تأكيد إرسال الطلب".</p></div>
+    <div class="wrap">
+      <h2>طريقة الطلب</h2>
+      <ol class="steps">
+        <li><span class="step-n" aria-hidden="true">١</span><div><h3>اختار هوديك</h3><p>حدد التصميم واللون والمقاس وأضفه للسلة.</p></div></li>
+        <li><span class="step-n" aria-hidden="true">٢</span><div><h3>ادفع بفودافون كاش أو InstaPay</h3><p>في خطوة الدفع هتلاقي زر يفتح لك الدفع مباشرة، من غير نسخ ولصق.</p></div></li>
+        <li><span class="step-n" aria-hidden="true">٣</span><div><h3>أكّد على واتساب</h3><p>ارفع صورة التحويل واضغط تأكيد، وهنحوّلك على واتساب وبنراجع الدفع يدويًا.</p></div></li>
+      </ol>
     </div>
   </section>
+
   <section class="faq" id="faq">
-    <h2>أسئلة شائعة</h2>
-    <details><summary>أدفع إزاي؟</summary><p>بفودافون كاش أو InstaPay، وبعدها ترفع صورة التحويل وتؤكد الطلب.</p></details>
-    <details><summary>أقدر أطبع اسمي؟</summary><p>أيوه، اكتب الاسم (حتى ٢٠ حرف) في خانة الطباعة وقت إتمام الطلب.</p></details>
-    <details><summary>بعد ما أأكد الطلب بيحصل إيه؟</summary><p>بنحوّلك على واتساب بتفاصيل طلبك، ونجهّزه بعد مراجعة إثبات التحويل.</p></details>
+    <div class="wrap">
+      <h2>أسئلة شائعة</h2>
+      <div class="acc">
+        <div class="acc-item">
+          <h3><button class="acc-q" id="q1" type="button" aria-expanded="false" aria-controls="a1">أدفع إزاي؟<span class="plus" aria-hidden="true"></span></button></h3>
+          <div class="acc-a" id="a1" role="region" aria-labelledby="q1"><div><p>بفودافون كاش أو InstaPay. هتلاقي زر الدفع في خطوة إتمام الطلب، وبعد التحويل ترفع صورة التحويل وتؤكد الطلب.</p></div></div>
+        </div>
+        <div class="acc-item">
+          <h3><button class="acc-q" id="q2" type="button" aria-expanded="false" aria-controls="a2">أقدر أطبع اسمي؟<span class="plus" aria-hidden="true"></span></button></h3>
+          <div class="acc-a" id="a2" role="region" aria-labelledby="q2"><div><p>أيوه، اكتب الاسم (حتى ٢٠ حرف) في خانة الطباعة وقت إتمام الطلب.</p></div></div>
+        </div>
+        <div class="acc-item">
+          <h3><button class="acc-q" id="q3" type="button" aria-expanded="false" aria-controls="a3">بعد ما أأكد الطلب بيحصل إيه؟<span class="plus" aria-hidden="true"></span></button></h3>
+          <div class="acc-a" id="a3" role="region" aria-labelledby="q3"><div><p>بنحوّلك على واتساب بتفاصيل طلبك، ونجهّزه بعد مراجعة إثبات التحويل.</p></div></div>
+        </div>
+      </div>
+    </div>
   </section>
 </main>
 
 <footer class="footer">
-  <div class="foot-top">
-    <div class="foot-brand">
-      <img class="logo-foot" src="logo-brand-black.png" alt="Onefournine Logo" width="838" height="568">
-      <p class="foot-tag">هوديز دفعة <span id="footerText"></span> بخامة مريحة وتصميم نظيف.</p>
-    </div>
-    <nav class="foot-col" aria-label="روابط سريعة">
-      <h4>روابط</h4>
-      <a href="#products">المنتجات</a>
-      <a href="#how">طريقة الطلب</a>
-      <a href="#faq">أسئلة شائعة</a>
-    </nav>
-    <div class="foot-col">
-      <h4>تابعنا</h4>
-      <div class="socials">
-        <a id="igLink" class="soc" target="_blank" rel="noopener noreferrer" aria-label="تابعنا على Instagram"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/></svg></a>
-        <a id="ttLink" class="soc" target="_blank" rel="noopener noreferrer" aria-label="تابعنا على TikTok"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M16.5 3h-3.1v12.3a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.6a5.7 5.7 0 1 0 4.9 5.6V9.1a7.6 7.6 0 0 0 4.4 1.4V7.4c-2.4 0-4.4-2-4.4-4.4z"/></svg></a>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <img class="logo-foot" src="logo-brand-black.png" alt="Onefournine" width="838" height="568" loading="lazy">
+        <p class="foot-tag">هوديز دفعة <span id="footerText"></span> بخامة مريحة وتصميم نظيف.</p>
+      </div>
+      <nav class="foot-col" aria-label="روابط سريعة">
+        <h4>روابط</h4>
+        <a href="#products">المنتجات</a>
+        <a href="#how">طريقة الطلب</a>
+        <a href="#faq">أسئلة شائعة</a>
+      </nav>
+      <div class="foot-col">
+        <h4>تابعنا</h4>
+        <div class="socials">
+          <a id="igLink" class="soc" target="_blank" rel="noopener noreferrer" aria-label="تابعنا على Instagram"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"/></svg></a>
+          <a id="ttLink" class="soc" target="_blank" rel="noopener noreferrer" aria-label="تابعنا على TikTok"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M16.5 3h-3.1v12.3a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.6a5.7 5.7 0 1 0 4.9 5.6V9.1a7.6 7.6 0 0 0 4.4 1.4V7.4c-2.4 0-4.4-2-4.4-4.4z"/></svg></a>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="foot-bottom">
-    <span>© <span id="year"></span> Onefournine</span>
-    <span class="dev" id="devText"></span>
+    <div class="foot-bottom">
+      <span>© <span id="year"></span> Onefournine</span>
+      <span class="dev" id="devText"></span>
+    </div>
   </div>
 </footer>
 
 <!-- تفاصيل المنتج -->
-<dialog id="productDialog" class="sheet">
+<dialog id="productDialog" aria-label="تفاصيل المنتج">
   <div id="productDetail"></div>
 </dialog>
 
 <!-- سلة المشتريات -->
-<dialog id="cartDialog" class="sheet">
-  <div class="sheet-head"><h2>سلة المشتريات</h2><button class="icon-btn" data-close aria-label="إغلاق">×</button></div>
-  <div id="cartItems"></div>
-  <div class="total-row"><span>إجمالي المنتجات</span><strong id="cartTotal">0 ج.م</strong></div>
-  <button class="btn" id="checkoutBtn">إتمام الطلب</button>
+<dialog id="cartDialog" class="sheet" aria-labelledby="cartTitle">
+  <div class="sheet-head"><h2 id="cartTitle">السلة <span class="muted" id="cartSub"></span></h2><button class="icon-btn" type="button" data-close aria-label="إغلاق">×</button></div>
+  <div id="cartItems" class="cart-list"></div>
+  <div class="cart-foot">
+    <div class="sum-line"><span>المجموع الفرعي</span><span id="cartSubtotal">0 ج.م</span></div>
+    <div class="sum-line total"><span>الإجمالي</span><strong id="cartTotal">0 ج.م</strong></div>
+    <button class="btn" type="button" id="checkoutBtn">إتمام الطلب</button>
+    <button class="text-btn" type="button" data-close>متابعة التسوق</button>
+  </div>
 </dialog>
 
 <!-- إتمام الطلب -->
-<dialog id="checkoutDialog" class="sheet">
-  <div class="sheet-head"><h2>إتمام الطلب</h2><button class="icon-btn" data-close aria-label="إغلاق">×</button></div>
+<dialog id="checkoutDialog" class="sheet" aria-labelledby="coTitle">
+  <div class="sheet-head"><h2 id="coTitle">إتمام الطلب</h2><button class="icon-btn" type="button" data-close aria-label="إغلاق">×</button></div>
+  <div class="sheet-body">
   <ol class="stepper" aria-label="خطوات الطلب">
     <li>المنتج</li><li>بيانات الطلب</li><li>الدفع</li><li>تأكيد</li>
   </ol>
@@ -138,13 +178,11 @@
     <div id="orderSummary"></div>
 
     <h3>وسيلة الدفع</h3>
-    <div class="method-group-title">المحافظ المحلية (EGP)</div>
-    <div class="method-grid" role="radiogroup" aria-label="محافظ محلية">
-      <label class="method"><input type="radio" name="pay" value="instapay"><img src="https://i.postimg.cc/Kv0YWWC1/FB-IMG-1782215016676.jpg" alt="Instapay" onerror="this.src='https://img.icons8.com/fluency/48/bank-transfer.png'"><span>Instapay</span></label>
-      <label class="method"><input type="radio" name="pay" value="vodafone"><img src="https://i.postimg.cc/3R35Y8Dq/FB-IMG-1782215147510.jpg" alt="Vodafone Cash" onerror="this.src='https://img.icons8.com/color/48/vodafone.png'"><span>Vodafone Cash</span></label>
+    <div class="method-grid" role="radiogroup" aria-label="وسيلة الدفع">
+      <label class="method"><input type="radio" name="pay" value="instapay"><img src="https://i.postimg.cc/Kv0YWWC1/FB-IMG-1782215016676.jpg" alt="" onerror="this.onerror=null;this.src='https://img.icons8.com/fluency/48/bank-transfer.png'"><span>Instapay</span></label>
+      <label class="method"><input type="radio" name="pay" value="vodafone"><img src="https://i.postimg.cc/3R35Y8Dq/FB-IMG-1782215147510.jpg" alt="" onerror="this.onerror=null;this.src='https://img.icons8.com/color/48/vodafone.png'"><span>Vodafone Cash</span></label>
     </div>
     <div id="payInfo"></div>
-
 
     <h3>إثبات التحويل</h3>
     <label class="btn ghost file-btn">
@@ -155,11 +193,12 @@
 
     <p class="err" id="formError" role="alert"></p>
     <button class="btn" id="submitBtn" type="submit">تأكيد إرسال الطلب</button>
-    <button class="btn ghost" type="button" data-close>رجوع</button>
+    <button class="text-btn" type="button" data-close>رجوع</button>
   </form>
+  </div>
 </dialog>
 
-<div id="toast" class="toast" role="status"></div>
+<div id="toast" class="toast" popover="manual" role="status" aria-live="polite"></div>
 
 <script src="script.js"></script>
 </body>

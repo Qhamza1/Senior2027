@@ -430,7 +430,7 @@ function showProduct(id) {
           <div class="pd-acc">
             <div class="acc-item open">
               <h3><button class="acc-q" id="dq1" type="button" aria-expanded="true" aria-controls="da1">التفاصيل<span class="plus" aria-hidden="true"></span></button></h3>
-              <div class="acc-a" id="da1" role="region" aria-labelledby="dq1"><div><p>${esc(p.description || "")} تقدر تطبع اسمك على القطعة (حتى ٢٠ حرف) أثناء إتمام الطلب.</p></div></div>
+              <div class="acc-a" id="da1" role="region" aria-labelledby="dq1"><div><p>${esc(p.description || "")} تقدر تطبع اسمك على القطعة أثناء إتمام الطلب.</p></div></div>
             </div>
             <div class="acc-item">
               <h3><button class="acc-q" id="dq2" type="button" aria-expanded="false" aria-controls="da2">الشحن<span class="plus" aria-hidden="true"></span></button></h3>

@@ -432,7 +432,7 @@ $("#colors").addEventListener("click",(e)=>{
 });
 $("#colors").addEventListener("input",(e)=>{ const t=e.target; if (t.dataset.ci!=null) E.colors[+t.dataset.ci][t.dataset.k]=t.value; });
 $("#colors").addEventListener("click",(e)=>{ const b=e.target.closest("[data-rc]"); if(b){ E.colors.splice(+b.dataset.rc,1); drawColors(); } });
-$("#addColor").addEventListener("click",()=>{ E.colors.push({name:"",value:"#08080A"}); drawColors(); });
+$("#addColor").addEventListener("click",()=>{ E.colors.push({name:"",value:"#08080A",imgs:[]}); drawColors(); });
 function drawSizes(){ $("#sizes").innerHTML = ALL_SIZES.map((z)=>`<button type="button" class="chip ${E.sizes.has(z)?"on":""}" data-z="${z}">${z}</button>`).join(""); }
 $("#sizes").addEventListener("click",(e)=>{ const b=e.target.closest("[data-z]"); if(!b) return; E.sizes.has(b.dataset.z)?E.sizes.delete(b.dataset.z):E.sizes.add(b.dataset.z); drawSizes(); });
 $("#file").addEventListener("change",(e)=>{

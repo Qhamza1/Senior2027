@@ -154,6 +154,108 @@ async function syncProducts() {
    أدوات مساعدة
    ========================================================== */
 const $ = (s) => document.querySelector(s);
+/* ===== قائمة اختيار عصرية (Custom Select) — تحافظ على <select> الأصلي للفورم والتحقق ===== */
+function enhanceSelect(sel, opts = {}) {
+  if (!sel) return;
+  if (sel._cs) return sel._cs.sync();
+  const wrap = document.createElement("div");
+  wrap.className = "cs";
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(sel);
+  sel.classList.add("cs-native");
+  sel.tabIndex = -1;
+  sel.setAttribute("aria-hidden", "true");
+  const trig = document.createElement("button");
+  trig.type = "button";
+  trig.className = "cs-trigger";
+  trig.setAttribute("aria-haspopup", "listbox");
+  trig.setAttribute("aria-expanded", "false");
+  const lab = sel.id && document.querySelector(`label[for="${sel.id}"]`);
+  if (lab) { if (!lab.id) lab.id = sel.id + "-lbl"; trig.setAttribute("aria-labelledby", lab.id); }
+  wrap.appendChild(trig);
+
+  let panel = null, list = null, q = null, items = [], active = -1;
+  const optsList = () => [...sel.options].filter((o) => o.value !== "");
+  const placeholder = () => (sel.options[0] && sel.options[0].value === "" ? sel.options[0].textContent : opts.title || "اختر");
+  function sync() {
+    const o = sel.selectedOptions[0];
+    const has = o && o.value !== "";
+    trig.innerHTML = `<span class="cs-val${has ? "" : " ph"}">${esc(has ? o.textContent : placeholder())}</span><svg class="cs-caret" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    trig.disabled = sel.disabled;
+  }
+  function paint(filter = "") {
+    const f = filter.trim();
+    const cur = sel.value;
+    items = optsList().filter((o) => !f || o.textContent.includes(f));
+    list.innerHTML = items.length
+      ? items.map((o, i) => `<li role="option" class="cs-opt${o.value === cur ? " on" : ""}" data-i="${i}" aria-selected="${o.value === cur}"><span>${esc(o.textContent)}</span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></li>`).join("")
+      : `<li class="cs-empty">لا نتائج</li>`;
+    active = Math.max(0, items.findIndex((o) => o.value === cur));
+    mark(true);
+  }
+  function mark(scroll) {
+    [...list.querySelectorAll(".cs-opt")].forEach((el, i) => {
+      el.classList.toggle("act", i === active);
+      if (i === active && scroll) el.scrollIntoView({ block: "center" });
+    });
+  }
+  function choose(i) {
+    const o = items[i];
+    if (!o) return;
+    sel.value = o.value;
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    sync();
+    close();
+  }
+  function open() {
+    if (panel || sel.disabled) return;
+    panel = document.createElement("div");
+    panel.className = "cs-layer";
+    panel.innerHTML = `<div class="cs-back"></div><div class="cs-panel" role="dialog" aria-modal="true" aria-label="${esc(opts.title || placeholder())}">
+      <div class="cs-grab" aria-hidden="true"></div>
+      <div class="cs-head"><b>${esc(opts.title || placeholder())}</b><button type="button" class="cs-x" aria-label="إغلاق">×</button></div>
+      ${opts.searchable ? `<div class="cs-search"><input type="search" placeholder="ابحث…" autocomplete="off" aria-label="بحث"></div>` : ""}
+      <ul class="cs-list" role="listbox"></ul></div>`;
+    list = panel.querySelector(".cs-list");
+    q = panel.querySelector("input");
+    (trig.closest("dialog[open]") || document.body).appendChild(panel);
+    paint();
+    requestAnimationFrame(() => panel && panel.classList.add("in"));
+    trig.setAttribute("aria-expanded", "true");
+    panel.querySelector(".cs-back").addEventListener("click", close);
+    panel.querySelector(".cs-x").addEventListener("click", close);
+    list.addEventListener("click", (e) => { const li = e.target.closest(".cs-opt"); if (li) choose(+li.dataset.i); });
+    if (q) q.addEventListener("input", () => paint(q.value));
+    panel.addEventListener("keydown", onKey);
+    // على الشاشات الكبيرة فقط نركّز البحث تلقائيًا (لتجنّب فتح الكيبورد على الموبايل)
+    (q && matchMedia("(hover:hover)").matches ? q : panel.querySelector(".cs-panel")).focus({ preventScroll: true });
+    panel.querySelector(".cs-panel").tabIndex = -1;
+  }
+  function close() {
+    if (!panel) return;
+    const p = panel; panel = null;
+    p.classList.remove("in");
+    trig.setAttribute("aria-expanded", "false");
+    setTimeout(() => p.remove(), 180);
+    trig.focus({ preventScroll: true });
+  }
+  function onKey(e) {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); return close(); }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!items.length) return;
+      active = (active + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+      mark(true);
+    } else if (e.key === "Enter" && items.length && e.target.tagName !== "BUTTON") { e.preventDefault(); choose(active); }
+    else if (e.key === "Tab") { e.preventDefault(); }
+  }
+  trig.addEventListener("click", open);
+  sel.addEventListener("change", sync);
+  if (sel.form) sel.form.addEventListener("reset", () => setTimeout(sync, 0));
+  sel._cs = { sync };
+  sync();
+}
+
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const money = (n) => `${Number(n).toLocaleString("ar-EG")} ج.م`;
 const findProduct = (id) => products.find((p) => p.id === id);
@@ -239,6 +341,7 @@ function cartTotal() {
   }, 0);
 }
 function checkAdd(p, color, size, qty) {
+  if (saleStatus(p) === "soon") return "هذا المنتج قريباً جداً وغير متاح للطلب بعد.";
   if (!color) return "اختر اللون أولًا.";
   if (!size) return "اختر المقاس أولًا.";
   if ((p.unavailableColors || []).includes(color)) return `اللون ${color} غير متاح حاليًا.`;
@@ -319,6 +422,9 @@ function renderCart() {
 const availColors = (p) => p.colors.filter((c) => !(p.unavailableColors || []).includes(c.name));
 const productHref = (id) => `#/p/${encodeURIComponent(id)}`;
 const LOW_STOCK = 5;
+// حالة المنتج: normal | preorder (حجز مسبق) | soon (قريباً جداً — غير قابل للشراء)
+const saleStatus = (p) => (p.saleStatus === "preorder" || p.saleStatus === "soon" ? p.saleStatus : "normal");
+const STATUS_BADGE = { preorder: "حجز مسبق", soon: "قريباً جداً" };
 function priceHTML(p, withChip = true) {
   const d = discountPct(p);
   return `<div class="price"><b>${money(unitPrice(p))}</b>${d ? `<s>${money(p.price)}</s>${withChip ? `<span class="off">-${d.toLocaleString("ar-EG")}%</span>` : ""}` : ""}</div>`;
@@ -326,20 +432,21 @@ function priceHTML(p, withChip = true) {
 function cardHTML(p, isNew = false) {
   const d = discountPct(p);
   const imgs = p.images?.length ? p.images : [p.image];
-  const out = p.stock <= 0;
+  const ss = saleStatus(p);
+  const out = ss !== "soon" && p.stock <= 0;
   const cols = availColors(p);
   return `
-  <a class="card${out ? " is-out" : ""}" href="${productHref(p.id)}" data-id="${esc(p.id)}" aria-label="${esc(p.name)}">
+  <a class="card${out ? " is-out" : ""}${ss !== "normal" ? " is-" + ss : ""}" href="${productHref(p.id)}" data-id="${esc(p.id)}" aria-label="${esc(p.name)}">
     <div class="media">
       <img class="img-main" src="${esc(imgUrl(p.image, 600))}" alt="${esc(p.name)}" width="600" height="750" loading="lazy" decoding="async" onerror="${FALLBACK_IMG}">
       ${imgs[1] ? `<img class="img-alt" src="${esc(imgUrl(imgs[1], 600))}" alt="" width="600" height="750" loading="lazy" decoding="async" aria-hidden="true">` : ""}
-      ${out ? `<span class="badge out">نفد</span>` : isNew ? `<span class="badge" dir="ltr">NEW IN</span>` : d ? `<span class="badge" dir="ltr">SALE</span>` : ""}
+      ${ss !== "normal" ? `<span class="badge status ${ss}">${STATUS_BADGE[ss]}</span>` : out ? `<span class="badge out">نفد</span>` : isNew ? `<span class="badge" dir="ltr">NEW IN</span>` : d ? `<span class="badge" dir="ltr">SALE</span>` : ""}
       ${cols.length > 1 ? `<span class="dots" role="img" aria-label="الألوان المتاحة: ${esc(cols.map((c) => c.name).join("، "))}">${cols.slice(0, 5).map((c) => `<i class="dot" style="background:${esc(c.value)}"></i>`).join("")}</span>` : ""}
     </div>
     <div class="body">
       <h3>${esc(p.name)}</h3>
       ${priceHTML(p)}
-      <span class="choose">${out ? "نفد المخزون" : "اختر المقاس"}</span>
+      <span class="choose">${ss === "soon" ? "قريباً جداً" : out ? "نفد المخزون" : ss === "preorder" ? "احجز الآن" : "اختر المقاس"}</span>
     </div>
   </a>`;
 }
@@ -411,7 +518,7 @@ function showProduct(id) {
               <img src="${esc(imgUrl(src, 1100))}" alt="${esc(p.name)} - ${i + 1}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="${FALLBACK_IMG}">
             </button>`).join("")}
           </div>
-          ${d ? `<span class="badge" dir="ltr">-${d.toLocaleString("ar-EG")}%</span>` : ""}
+          ${saleStatus(p) !== "normal" ? `<span class="badge status ${saleStatus(p)}">${STATUS_BADGE[saleStatus(p)]}</span>` : d ? `<span class="badge" dir="ltr">-${d.toLocaleString("ar-EG")}%</span>` : ""}
           ${imgs.length > 1 ? `<span class="pg-count" id="pgCount">1 / ${imgs.length}</span>` : ""}
           ${imgs.length > 1 ? `<div class="pg-dots" id="pgDots" aria-hidden="true">${imgs.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
         </div>
@@ -486,14 +593,17 @@ function renderBuy() {
   const p = findProduct(detail.id);
   if (!p) return;
   const left = Math.max(p.stock - usedStock(p.id), 0);
-  const out = p.stock <= 0;
-  const soldOut = !out && left <= 0;
-  const st = out ? ["out", "نفد المخزون"] : soldOut ? ["out", "وصلت للحد الأقصى المتاح في السلة"] : left <= LOW_STOCK ? ["low", `آخر ${left.toLocaleString("ar-EG")} قطع متاحة`] : ["ok", "متوفر"];
+  const ss = saleStatus(p);
+  const soon = ss === "soon";
+  const out = !soon && p.stock <= 0;
+  const soldOut = !out && !soon && left <= 0;
+  const st = soon ? ["soon", "قريباً جداً — المنتج غير متاح للطلب بعد"] : out ? ["out", "نفد المخزون"] : soldOut ? ["out", "وصلت للحد الأقصى المتاح في السلة"] : left <= LOW_STOCK ? ["low", `آخر ${left.toLocaleString("ar-EG")} قطع متاحة`] : ss === "preorder" ? ["ok", "حجز مسبق — يُشحن فور وصول الدفعة"] : ["ok", "متوفر"];
   const unSizes = p.unavailableSizes || [];
   const unCols = p.unavailableColors || [];
   const lowAll = !out && left <= LOW_STOCK;
   const fam = familyOf(p);
-  const needSize = !detail.size && !out && !soldOut;
+  const needSize = !detail.size && !out && !soldOut && !soon;
+  const blocked = out || soldOut || soon;
   $("#buyBox").innerHTML = `
     <div class="avail ${st[0]}">${st[1]}</div>
     ${fam.length > 1 ? `
@@ -523,15 +633,15 @@ function renderBuy() {
         <output aria-live="polite">${detail.qty.toLocaleString("ar-EG")}</output>
         <button type="button" data-d="inc" aria-label="زيادة الكمية">+</button>
       </div>
-      <button type="button" class="btn ${needSize ? "is-needs" : ""}" id="addBtn" data-d="add" ${out || soldOut ? "disabled" : ""}>${out ? "غير متاح" : soldOut ? "تم الوصول للحد الأقصى" : needSize ? "اختر المقاس" : `أضف إلى السلة · ${money(unitPrice(p) * detail.qty)}`}</button>
+      <button type="button" class="btn ${needSize ? "is-needs" : ""}" id="addBtn" data-d="add" ${blocked ? "disabled" : ""}>${soon ? "قريباً جداً" : out ? "غير متاح" : soldOut ? "تم الوصول للحد الأقصى" : needSize ? "اختر المقاس" : `${ss === "preorder" ? "احجز الآن" : "أضف إلى السلة"} · ${money(unitPrice(p) * detail.qty)}`}</button>
     </div>
-    <button type="button" class="btn ghost buy-now" data-d="buynow" ${out || soldOut ? "disabled" : ""}>اشترِ الآن</button>`;
+    <button type="button" class="btn ghost buy-now" data-d="buynow" ${blocked ? "disabled" : ""} ${soon ? "hidden" : ""}>${ss === "preorder" ? "احجز مسبقًا الآن" : "اشترِ الآن"}</button>`;
   // الشريط اللاصق
   const sa = $("#saBtn");
   if (sa) {
     $("#saPrice").textContent = money(unitPrice(p) * detail.qty);
-    sa.textContent = out ? "غير متاح" : "أضف إلى السلة";
-    sa.disabled = out || soldOut;
+    sa.textContent = soon ? "قريباً جداً" : out ? "غير متاح" : ss === "preorder" ? "احجز الآن" : "أضف إلى السلة";
+    sa.disabled = blocked;
     sa.dataset.d = "add";
   }
   // إعادة ربط المراقب بالزر الجديد
@@ -855,6 +965,7 @@ function init() {
   });
 
   $("#cGov").innerHTML = `<option value="">اختر المحافظة</option>` + STORE_CONFIG.governorates.map((g) => `<option>${esc(g)}</option>`).join("");
+  enhanceSelect($("#cGov"), { title: "اختر المحافظة", searchable: true });
   renderProducts();
   renderCart();
   syncProducts();

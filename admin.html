@@ -53,10 +53,55 @@ label{display:block;font-size:.85rem;color:var(--muted);margin:14px 0 6px}
 .ord h3{margin:0;font-size:.95rem;display:flex;justify-content:space-between;gap:8px}
 .ord p{margin:3px 0;color:var(--muted);font-size:.85rem}
 .ord ul{margin:8px 0;padding-inline-start:18px;font-size:.88rem}
-.ord select{width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:15px;color:inherit}
+.ord .cs{margin-top:8px}.ord select:not(.cs-native){width:100%;margin-top:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:15px;color:inherit}
 .ord a.btn{display:inline-flex;align-items:center;text-decoration:none}
 .badge{background:var(--red);color:#0B0B0D;border-radius:99px;padding:0 7px;font-size:.75rem;margin-inline-start:4px}
 [hidden]{display:none!important}
+:root{--cs-r:12px;--cs-r2:20px;--cs-r3:10px;--cs-panel:#141417}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
+.seg button{min-height:42px;border:0;border-radius:999px;background:transparent;cursor:pointer;font-size:.85rem;color:var(--muted)}
+.seg button.on{background:var(--emerald);color:#0B0B0D;font-weight:600}
+.hint{margin:6px 2px 0;font-size:.78rem;color:var(--muted);min-height:1.2em}
+.tag.pre{color:var(--fg);border-color:var(--jade)}
+/* ===== قائمة اختيار عصرية ===== */
+.cs { position: relative; }
+.cs-native { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; }
+.cs-trigger { width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: var(--bg); color: var(--fg); border: 1px solid var(--line-strong, var(--line)); border-radius: var(--cs-r, 12px); font: inherit; font-size: 16px; text-align: start; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.cs-trigger:hover { border-color: var(--fg); }
+.cs-trigger:focus-visible, .cs-trigger[aria-expanded="true"] { outline: none; border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+.cs-trigger:disabled { opacity: .5; cursor: not-allowed; }
+.cs-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-val.ph { color: var(--muted); }
+.cs-caret { flex: none; color: var(--muted); transition: transform .2s; }
+.cs-trigger[aria-expanded="true"] .cs-caret { transform: rotate(180deg); }
+.cs-layer { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-end; justify-content: center; }
+.cs-back { position: absolute; inset: 0; background: rgba(0, 0, 0, .5); opacity: 0; transition: opacity .18s; }
+.cs-panel { position: relative; width: 100%; max-width: 480px; max-height: 78dvh; display: flex; flex-direction: column; background: var(--cs-panel, var(--bg)); color: var(--fg); border: 1px solid var(--line); border-radius: var(--cs-r2, 0) var(--cs-r2, 0) 0 0; box-shadow: 0 -12px 40px rgba(0, 0, 0, .25); transform: translateY(100%); transition: transform .24s cubic-bezier(.22, .8, .3, 1); outline: none; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.cs-layer.in .cs-back { opacity: 1; }
+.cs-layer.in .cs-panel { transform: none; }
+.cs-grab { width: 38px; height: 4px; margin: 8px auto 0; border-radius: 4px; background: var(--line-strong, var(--line)); }
+.cs-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 18px 6px; }
+.cs-head b { font-size: .95rem; }
+.cs-x { width: 40px; height: 40px; display: grid; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--fg); font-size: 1.6rem; line-height: 1; cursor: pointer; }
+.cs-x:hover { background: var(--surface); }
+.cs-search { padding: 4px 14px 10px; }
+.cs-search input { min-height: 44px; font-size: 16px; }
+.cs-list { list-style: none; margin: 0; padding: 4px 8px 12px; overflow-y: auto; overscroll-behavior: contain; display: grid; gap: 2px; }
+.cs-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 50px; padding: 0 14px; border-radius: var(--cs-r3, 0); cursor: pointer; font-size: .95rem; }
+.cs-opt svg { opacity: 0; flex: none; }
+.cs-opt.act { background: var(--surface); }
+.cs-opt:active { background: var(--surface); }
+.cs-opt.on { background: var(--fg); color: var(--bg); font-weight: 600; }
+.cs-opt.on svg { opacity: 1; }
+.cs-empty { padding: 24px; text-align: center; color: var(--muted); }
+@media (min-width: 720px) {
+  .cs-layer { align-items: center; }
+  .cs-panel { max-height: 70dvh; border-radius: var(--cs-r2, 0); box-shadow: 0 20px 60px rgba(0, 0, 0, .3); transform: translateY(14px) scale(.98); opacity: 0; transition: transform .2s, opacity .2s; padding-bottom: 0; }
+  .cs-layer.in .cs-panel { opacity: 1; }
+  .cs-grab { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .cs-panel, .cs-back { transition: none; } }
+
 </style>
 </head>
 <body>
@@ -88,6 +133,13 @@ label{display:block;font-size:.85rem;color:var(--muted);margin:14px 0 6px}
     <label>الوصف</label><textarea id="fDesc" rows="3"></textarea>
     <label>السعر الأصلي (ج.م)</label><input id="fPrice" type="number" inputmode="numeric" min="0">
     <label>سعر بعد الخصم (اختياري) <span id="pct"></span></label><input id="fDisc" type="number" inputmode="numeric" min="0">
+    <label>حالة المنتج</label>
+    <div class="seg" id="fStatus" role="radiogroup" aria-label="حالة المنتج">
+      <button type="button" role="radio" data-s="normal">منتج عادي</button>
+      <button type="button" role="radio" data-s="preorder">حجز مسبق</button>
+      <button type="button" role="radio" data-s="soon">قريباً جداً</button>
+    </div>
+    <p class="hint" id="statusHint"></p>
     <label>المخزون (عدد القطع)</label><input id="fStock" type="number" inputmode="numeric" min="0" value="20">
     <label>الألوان</label><div id="colors"></div><button class="btn ghost sm" id="addColor" type="button">+ لون</button>
     <label>المقاسات</label><div class="chips" id="sizes"></div>
@@ -116,6 +168,108 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const money = (n) => Number(n).toLocaleString("ar-EG") + " ج.م";
 function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove("show"),2600); }
+
+/* ===== قائمة اختيار عصرية (Custom Select) — تحافظ على <select> الأصلي للفورم والتحقق ===== */
+function enhanceSelect(sel, opts = {}) {
+  if (!sel) return;
+  if (sel._cs) return sel._cs.sync();
+  const wrap = document.createElement("div");
+  wrap.className = "cs";
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(sel);
+  sel.classList.add("cs-native");
+  sel.tabIndex = -1;
+  sel.setAttribute("aria-hidden", "true");
+  const trig = document.createElement("button");
+  trig.type = "button";
+  trig.className = "cs-trigger";
+  trig.setAttribute("aria-haspopup", "listbox");
+  trig.setAttribute("aria-expanded", "false");
+  const lab = sel.id && document.querySelector(`label[for="${sel.id}"]`);
+  if (lab) { if (!lab.id) lab.id = sel.id + "-lbl"; trig.setAttribute("aria-labelledby", lab.id); }
+  wrap.appendChild(trig);
+
+  let panel = null, list = null, q = null, items = [], active = -1;
+  const optsList = () => [...sel.options].filter((o) => o.value !== "");
+  const placeholder = () => (sel.options[0] && sel.options[0].value === "" ? sel.options[0].textContent : opts.title || "اختر");
+  function sync() {
+    const o = sel.selectedOptions[0];
+    const has = o && o.value !== "";
+    trig.innerHTML = `<span class="cs-val${has ? "" : " ph"}">${esc(has ? o.textContent : placeholder())}</span><svg class="cs-caret" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    trig.disabled = sel.disabled;
+  }
+  function paint(filter = "") {
+    const f = filter.trim();
+    const cur = sel.value;
+    items = optsList().filter((o) => !f || o.textContent.includes(f));
+    list.innerHTML = items.length
+      ? items.map((o, i) => `<li role="option" class="cs-opt${o.value === cur ? " on" : ""}" data-i="${i}" aria-selected="${o.value === cur}"><span>${esc(o.textContent)}</span><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></li>`).join("")
+      : `<li class="cs-empty">لا نتائج</li>`;
+    active = Math.max(0, items.findIndex((o) => o.value === cur));
+    mark(true);
+  }
+  function mark(scroll) {
+    [...list.querySelectorAll(".cs-opt")].forEach((el, i) => {
+      el.classList.toggle("act", i === active);
+      if (i === active && scroll) el.scrollIntoView({ block: "center" });
+    });
+  }
+  function choose(i) {
+    const o = items[i];
+    if (!o) return;
+    sel.value = o.value;
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    sync();
+    close();
+  }
+  function open() {
+    if (panel || sel.disabled) return;
+    panel = document.createElement("div");
+    panel.className = "cs-layer";
+    panel.innerHTML = `<div class="cs-back"></div><div class="cs-panel" role="dialog" aria-modal="true" aria-label="${esc(opts.title || placeholder())}">
+      <div class="cs-grab" aria-hidden="true"></div>
+      <div class="cs-head"><b>${esc(opts.title || placeholder())}</b><button type="button" class="cs-x" aria-label="إغلاق">×</button></div>
+      ${opts.searchable ? `<div class="cs-search"><input type="search" placeholder="ابحث…" autocomplete="off" aria-label="بحث"></div>` : ""}
+      <ul class="cs-list" role="listbox"></ul></div>`;
+    list = panel.querySelector(".cs-list");
+    q = panel.querySelector("input");
+    (trig.closest("dialog[open]") || document.body).appendChild(panel);
+    paint();
+    requestAnimationFrame(() => panel && panel.classList.add("in"));
+    trig.setAttribute("aria-expanded", "true");
+    panel.querySelector(".cs-back").addEventListener("click", close);
+    panel.querySelector(".cs-x").addEventListener("click", close);
+    list.addEventListener("click", (e) => { const li = e.target.closest(".cs-opt"); if (li) choose(+li.dataset.i); });
+    if (q) q.addEventListener("input", () => paint(q.value));
+    panel.addEventListener("keydown", onKey);
+    // على الشاشات الكبيرة فقط نركّز البحث تلقائيًا (لتجنّب فتح الكيبورد على الموبايل)
+    (q && matchMedia("(hover:hover)").matches ? q : panel.querySelector(".cs-panel")).focus({ preventScroll: true });
+    panel.querySelector(".cs-panel").tabIndex = -1;
+  }
+  function close() {
+    if (!panel) return;
+    const p = panel; panel = null;
+    p.classList.remove("in");
+    trig.setAttribute("aria-expanded", "false");
+    setTimeout(() => p.remove(), 180);
+    trig.focus({ preventScroll: true });
+  }
+  function onKey(e) {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); return close(); }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!items.length) return;
+      active = (active + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+      mark(true);
+    } else if (e.key === "Enter" && items.length && e.target.tagName !== "BUTTON") { e.preventDefault(); choose(active); }
+    else if (e.key === "Tab") { e.preventDefault(); }
+  }
+  trig.addEventListener("click", open);
+  sel.addEventListener("change", sync);
+  if (sel.form) sel.form.addEventListener("reset", () => setTimeout(sync, 0));
+  sel._cs = { sync };
+  sync();
+}
 
 /* ===== Firestore (REST) + تحويل القيم ===== */
 const FS = `https://firestore.googleapis.com/v1/projects/${CFG.projectId}/databases/(default)/documents/products`;
@@ -178,7 +332,7 @@ async function refresh(){
       <img src="${esc((p.images||[])[0]||"")}" alt="" onerror="this.style.visibility='hidden'">
       <div><h3>${esc(p.name)}</h3>
         <p>${p.discountPrice!=null&&p.discountPrice<p.price?`<s>${money(p.price)}</s> <b style="color:var(--fg)">${money(p.discountPrice)}</b>`:money(p.price)} · مخزون ${esc(p.stock)}</p>
-        ${p.active===false?'<span class="tag">مخفي</span>':""} ${p.featured?'<span class="tag">مميز</span>':""}
+        ${p.saleStatus==="preorder"?'<span class="tag pre">حجز مسبق</span>':p.saleStatus==="soon"?'<span class="tag pre">قريباً جداً</span>':""} ${p.active===false?'<span class="tag">مخفي</span>':""} ${p.featured?'<span class="tag">مميز</span>':""}
         <div class="acts"><button class="btn ghost sm" data-a="edit">تعديل</button>
           <button class="btn ghost sm" data-a="vis">${p.active===false?"إظهار":"إخفاء"}</button>
           <button class="btn ghost sm danger" data-a="del">حذف</button></div></div>
@@ -199,7 +353,7 @@ $("#seedBtn").addEventListener("click", async (e)=>{
   e.target.disabled = true;
   try {
     for (const [i,[id,name,desc,a,b,price,disc,cn,cv,feat]] of SEED.entries())
-      await saveDoc(id,{ name, description:desc, images:[a,b], price, discountPrice:disc, stock:20, featured:feat, active:true,
+      await saveDoc(id,{ name, description:desc, images:[a,b], price, discountPrice:disc, stock:20, saleStatus:"normal", featured:feat, active:true,
         colors:[{name:cn,value:cv}], sizes:ALL_SIZES, createdAt: Date.now()-i });
     toast("تم الاستيراد");
   } catch (er) { toast("حصل خطأ: "+er.message); }
@@ -215,10 +369,14 @@ function openEditor(p){
   $("#edTitle").textContent = p ? "تعديل المنتج" : "منتج جديد";
   $("#fName").value = p?.name||""; $("#fDesc").value = p?.description||""; $("#fPrice").value = p?.price??"";
   $("#fDisc").value = p?.discountPrice??""; $("#fStock").value = p?.stock??20;
+  setStatus(p?.saleStatus==="preorder"||p?.saleStatus==="soon" ? p.saleStatus : "normal");
   $("#fFeat").checked = !!p?.featured; $("#fOn").checked = p?.active!==false; $("#edErr").textContent = "";
   drawColors(); drawSizes(); drawImgs(); pct();
   $("#editor").hidden = false; $("#editor").scrollTop = 0; document.body.style.overflow = "hidden";
 }
+const STATUS_HINT = { normal:"يظهر المنتج للبيع بشكل طبيعي.", preorder:"تظهر شارة «حجز مسبق» ويقدر العميل يطلبه (بحد المخزون المحدد).", soon:"تظهر شارة «قريباً جداً» ويتعطّل الشراء لحد ما تغيّر الحالة." };
+function setStatus(v){ E.status = v; document.querySelectorAll("#fStatus [data-s]").forEach((b)=>{ const on=b.dataset.s===v; b.classList.toggle("on",on); b.setAttribute("aria-checked",on); }); $("#statusHint").textContent = STATUS_HINT[v]; }
+$("#fStatus").addEventListener("click",(e)=>{ const b=e.target.closest("[data-s]"); if(b&&E) setStatus(b.dataset.s); });
 function closeEditor(){ $("#editor").hidden = true; document.body.style.overflow = ""; E = null; }
 function pct(){ const a=+$("#fPrice").value, b=+$("#fDisc").value; $("#pct").textContent = a&&b&&b<a ? `(-${Math.round((1-b/a)*100)}%)` : ""; }
 ["#fPrice","#fDisc"].forEach((s)=>$(s).addEventListener("input",pct));
@@ -262,7 +420,7 @@ async function save(){
     }
     $("#saveBtn").textContent = "جاري الحفظ...";
     await saveDoc(E.id, { name, description:$("#fDesc").value.trim(), price, discountPrice:disc, stock:Math.max(0,Math.floor(+$("#fStock").value||0)),
-      featured:$("#fFeat").checked, active:$("#fOn").checked, colors, sizes:ALL_SIZES.filter((z)=>E.sizes.has(z)), images:urls,
+      saleStatus:E.status||"normal", featured:$("#fFeat").checked, active:$("#fOn").checked, colors, sizes:ALL_SIZES.filter((z)=>E.sizes.has(z)), images:urls,
       unavailableColors:E.extra.unavailableColors||[], unavailableSizes:E.extra.unavailableSizes||[], createdAt:E.createdAt });
     toast("تم الحفظ"); closeEditor(); refresh();
   } catch (er) { $("#edErr").textContent = er.message==="login" ? "انتهت الجلسة، سجّل الدخول من جديد." : "تعذّر الحفظ: "+er.message; }
@@ -295,6 +453,7 @@ async function refreshOrders(){
       <div class="acts"><a class="btn ghost sm" target="_blank" rel="noopener" href="https://wa.me/${waNum(o.phone)}">واتساب العميل</a>
         <button class="btn ghost sm danger" data-del>حذف</button></div>
     </div>`).join("") : '<p class="tag" style="display:block;padding:10px;margin-top:12px">مفيش طلبات لسه.</p>';
+  document.querySelectorAll("#ordList select[data-st]").forEach((x)=>enhanceSelect(x,{title:"حالة الطلب"}));
 }
 $("#ordList").addEventListener("change", async (e)=>{
   const sel = e.target.closest("select[data-st]"); if (!sel) return;

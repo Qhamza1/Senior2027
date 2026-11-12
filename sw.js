@@ -1,4 +1,4 @@
-const CACHE = "onefournine-v8";
+const CACHE = "onefournine-v9";
 const CORE = ["./", "index.html", "style.css", "script.js", "pwa.js", "intro.css", "intro.js", "intro-box.jpg", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {

@@ -98,8 +98,8 @@ html[dir="rtl"] .kicker { text-align: right; }
 .empty { grid-column: 1 / -1; color: var(--muted); padding: 32px 0; text-align: center; }
 
 .card { display: flex; flex-direction: column; min-width: 0; text-decoration: none; color: inherit; }
-.media { position: relative; display: block; aspect-ratio: 4 / 5; background: var(--surface); overflow: hidden; }
-.media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s, transform 0.8s var(--ease); }
+.media { position: relative; display: block; aspect-ratio: var(--img-ratio, 4 / 5); background: var(--surface); overflow: hidden; }
+.media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: var(--img-fit, cover); transition: opacity 0.5s, transform 0.8s var(--ease); }
 .img-alt { opacity: 0; }
 @media (hover: hover) {
   .card:hover .img-alt { opacity: 1; }
@@ -162,8 +162,8 @@ html[dir="rtl"] .kicker { text-align: right; }
 .pg-wrap { position: relative; margin-inline: calc(var(--pad) * -1); }
 .pg { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .pg::-webkit-scrollbar { display: none; }
-.pg-item { flex: 0 0 100%; scroll-snap-align: center; position: relative; padding: 0; border: 0; background: var(--surface); aspect-ratio: 4 / 5; cursor: zoom-in; overflow: hidden; }
-.pg-item img { width: 100%; height: 100%; object-fit: cover; }
+.pg-item { flex: 0 0 100%; scroll-snap-align: center; position: relative; padding: 0; border: 0; background: var(--surface); aspect-ratio: var(--img-ratio, 4 / 5); cursor: zoom-in; overflow: hidden; }
+.pg-item img { width: 100%; height: 100%; object-fit: var(--img-fit, cover); }
 .pg-count { position: absolute; bottom: 12px; inset-inline-end: 14px; padding: 2px 10px; background: rgba(255, 255, 255, 0.9); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; direction: ltr; pointer-events: none; }
 .pg-dots { display: flex; justify-content: center; gap: 6px; padding: 12px 0 0; }
 .pg-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); transition: background 0.2s, transform 0.2s; }
@@ -371,8 +371,11 @@ body:has(dialog[open]) { overflow: hidden; }
 
 /* ===== مطابقة المرجع: صفحة المنتج والشيك أوت ===== */
 .sw-thumbs { display: flex; flex-wrap: wrap; gap: 6px; }
-.sw-thumb { width: 64px; aspect-ratio: 4 / 5; background: var(--surface); border-bottom: 2px solid transparent; overflow: hidden; }
-.sw-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.sw-thumb { width: 64px; aspect-ratio: var(--img-ratio, 4 / 5); background: var(--surface); border-bottom: 2px solid transparent; overflow: hidden; }
+.sw-thumb img { width: 100%; height: 100%; object-fit: var(--img-fit, cover); }
+button.sw-thumb { padding: 0; border: 0; border-bottom: 2px solid transparent; cursor: pointer; }
+button.sw-thumb:disabled { opacity: .35; cursor: not-allowed; }
+button.sw-thumb.on { border-bottom-color: var(--fg); }
 .sw-thumb.on { border-bottom-color: var(--fg); }
 .ship-note { display: flex; align-items: center; gap: 8px; margin-top: 22px; font-size: 0.84rem; color: var(--muted); }
 .ship-note i { width: 9px; height: 9px; border-radius: 50%; background: #2fbf71; flex: none; }

@@ -118,6 +118,16 @@ let products = (() => {
   try { const c = JSON.parse(localStorage.getItem(PRODUCTS_CACHE)); if (Array.isArray(c) && c.length) return c; } catch { /* لا نسخة */ }
   return LOCAL_PRODUCTS;
 })();
+// إعدادات مقاس الصور (من لوحة التحكم) — محفوظة محليًا لتجنّب أي وميض
+function applyImageSettings(s) {
+  if (!s) return;
+  const r = /^\d+ \/ \d+$/.test(s.imageRatio || "") ? s.imageRatio : "4 / 5";
+  const f = s.imageFit === "contain" ? "contain" : "cover";
+  document.documentElement.style.setProperty("--img-ratio", r);
+  document.documentElement.style.setProperty("--img-fit", f);
+  try { localStorage.setItem("o149_imgset", JSON.stringify({ imageRatio: r, imageFit: f })); } catch { /* تخزين غير متاح */ }
+}
+try { applyImageSettings(JSON.parse(localStorage.getItem("o149_imgset"))); } catch { /* لا إعدادات محفوظة */ }
 const imgUrl = (s, w) => /res\.cloudinary\.com\/.+\/image\/upload\//.test(s) ? s.replace("/image/upload/", `/image/upload/f_auto,q_auto,w_${w}/`) : s;
 const fsDec = (f) => "stringValue" in f ? f.stringValue : "integerValue" in f ? Number(f.integerValue) : "doubleValue" in f ? f.doubleValue
   : "booleanValue" in f ? f.booleanValue : "nullValue" in f ? null : "arrayValue" in f ? (f.arrayValue.values || []).map(fsDec)
@@ -131,7 +141,9 @@ async function fetchRemoteProducts() {
     const r = await fetch(`https://firestore.googleapis.com/v1/projects/${c.projectId}/databases/(default)/documents/products?pageSize=300&key=${c.apiKey}`, { signal: ctrl.signal });
     if (!r.ok) return null;
     const d = await r.json();
-    return (d.documents || []).map((doc) => {
+    const sdoc = (d.documents || []).find((x) => x.name.endsWith("/_settings"));
+    if (sdoc) applyImageSettings(Object.fromEntries(Object.entries(sdoc.fields || {}).map(([k, x]) => [k, fsDec(x)])));
+    return (d.documents || []).filter((x) => !x.name.endsWith("/_settings")).map((doc) => {
       const o = Object.fromEntries(Object.entries(doc.fields || {}).map(([k, x]) => [k, fsDec(x)]));
       return { unavailableColors: [], unavailableSizes: [], colors: [], sizes: [], stock: 0, discountPrice: null, ...o, id: doc.name.split("/").pop(), image: (o.images || [])[0] };
     }).filter((p) => p.active !== false && p.image && p.name && p.price > 0 && p.colors.length && p.sizes.length)
@@ -389,7 +401,7 @@ function renderCart() {
         if (!p) return "";
         return `
         <article class="cart-item">
-          <img src="${esc(imgUrl(p.image, 240))}" alt="${esc(p.name)}" width="84" height="104" loading="lazy" onerror="${FALLBACK_IMG}">
+          <img src="${esc(imgUrl(colorImgs(p, i.color)[0], 240))}" alt="${esc(p.name)}" width="84" height="104" loading="lazy" onerror="${FALLBACK_IMG}">
           <div class="ci-info">
             <div class="ci-top">
               <b>${esc(p.name)}</b>
@@ -423,6 +435,10 @@ const availColors = (p) => p.colors.filter((c) => !(p.unavailableColors || []).i
 const productHref = (id) => `#/p/${encodeURIComponent(id)}`;
 const LOW_STOCK = 5;
 // حالة المنتج: normal | preorder (حجز مسبق) | soon (قريباً جداً — غير قابل للشراء)
+// صور اللون: لو اللون له صور خاصة تظهر هي، وإلا صور المنتج الأساسية
+const baseImgs = (p) => (p.images?.length ? p.images : [p.image]);
+const colorImgs = (p, name) => { const c = (p.colors || []).find((x) => x.name === name); return c?.images?.length ? c.images : baseImgs(p); };
+const hasColorImgs = (p) => (p.colors || []).some((c) => c.images?.length);
 const saleStatus = (p) => (p.saleStatus === "preorder" || p.saleStatus === "soon" ? p.saleStatus : "normal");
 const STATUS_BADGE = { preorder: "حجز مسبق", soon: "قريباً جداً" };
 function priceHTML(p, withChip = true) {
@@ -492,6 +508,21 @@ function route() {
 }
 
 let pdObserver = null;
+// يرسم معرض صور اللون المختار (ويرجع للأول عند تبديل اللون)
+function renderGallery(p) {
+  const pg = $("#pg");
+  if (!pg || !detail) return;
+  const imgs = colorImgs(p, detail.color);
+  pg.innerHTML = imgs.map((src, i) => `
+    <button type="button" class="pg-item" data-zoom="${i}" aria-label="تكبير الصورة ${i + 1}">
+      <img src="${esc(imgUrl(src, 1100))}" alt="${esc(p.name)} - ${i + 1}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="${FALLBACK_IMG}">
+    </button>`).join("");
+  pg.scrollLeft = 0;
+  const cnt = $("#pgCount"), dots = $("#pgDots");
+  cnt.hidden = dots.hidden = imgs.length < 2;
+  cnt.textContent = `1 / ${imgs.length}`;
+  dots.innerHTML = imgs.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("");
+}
 function teardownProduct() {
   if (pdObserver) { pdObserver.disconnect(); pdObserver = null; }
   detail = null;
@@ -505,22 +536,16 @@ function showProduct(id) {
   detail = { id, color: firstColor, size: null, qty: 1 };
   document.title = `${p.name} | Onefournine`;
   const d = discountPct(p);
-  const imgs = p.images?.length ? p.images : [p.image];
   const others = products.filter((x) => x.id !== id).slice(0, 4);
   $("#productView").innerHTML = `
     <div class="wrap">
       <nav class="crumbs" aria-label="مسار التنقل"><a href="#top">الرئيسية</a><span aria-hidden="true">/</span><a href="#products">المنتجات</a><span aria-hidden="true">/</span><span>${esc(p.name)}</span></nav>
       <div class="pdp">
         <div class="pg-wrap">
-          <div class="pg" id="pg" aria-label="صور المنتج">
-            ${imgs.map((src, i) => `
-            <button type="button" class="pg-item" data-zoom="${i}" aria-label="تكبير الصورة ${i + 1}">
-              <img src="${esc(imgUrl(src, 1100))}" alt="${esc(p.name)} - ${i + 1}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="${FALLBACK_IMG}">
-            </button>`).join("")}
-          </div>
+          <div class="pg" id="pg" aria-label="صور المنتج"></div>
           ${saleStatus(p) !== "normal" ? `<span class="badge status ${saleStatus(p)}">${STATUS_BADGE[saleStatus(p)]}</span>` : d ? `<span class="badge" dir="ltr">-${d.toLocaleString("ar-EG")}%</span>` : ""}
-          ${imgs.length > 1 ? `<span class="pg-count" id="pgCount">1 / ${imgs.length}</span>` : ""}
-          ${imgs.length > 1 ? `<div class="pg-dots" id="pgDots" aria-hidden="true">${imgs.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
+          <span class="pg-count" id="pgCount" hidden></span>
+          <div class="pg-dots" id="pgDots" aria-hidden="true" hidden></div>
         </div>
         <div class="info">
           <h1>${esc(p.name)}</h1>
@@ -559,16 +584,19 @@ function showProduct(id) {
     </div>`;
   setView("product");
   renderBuy();
-  (p.images || []).forEach((src) => { new Image().src = imgUrl(src, 1100); });
+  renderGallery(p);
+  baseImgs(p).concat((p.colors || []).flatMap((c) => c.images || [])).forEach((src) => { new Image().src = imgUrl(src, 1100); });
 
   // نقاط المعرض + العدّاد أثناء السحب
   const pg = $("#pg");
-  if (imgs.length > 1 && pg) {
+  if (pg) {
     pg.addEventListener("scroll", () => {
+      const n = pg.children.length;
+      if (n < 2) return;
       const w = pg.clientWidth || 1;
-      const i = Math.min(imgs.length - 1, Math.max(0, Math.round(Math.abs(pg.scrollLeft) / w)));
-      $("#pgCount").textContent = `${i + 1} / ${imgs.length}`;
-      document.querySelectorAll("#pgDots i").forEach((el, n) => el.classList.toggle("on", n === i));
+      const i = Math.min(n - 1, Math.max(0, Math.round(Math.abs(pg.scrollLeft) / w)));
+      $("#pgCount").textContent = `${i + 1} / ${n}`;
+      document.querySelectorAll("#pgDots i").forEach((el, k) => el.classList.toggle("on", k === i));
     }, { passive: true });
   }
 
@@ -612,6 +640,12 @@ function renderBuy() {
       <div class="sw-thumbs" role="group" aria-label="اللون">
         ${fam.map((x) => `<a class="sw-thumb ${x.id === p.id ? "on" : ""}" href="${productHref(x.id)}" aria-label="${esc(x.name)}" ${x.id === p.id ? 'aria-current="true"' : ""}><img src="${esc(imgUrl(x.image, 200))}" alt="" width="70" height="88" loading="lazy"></a>`).join("")}
       </div>
+    </div>` : hasColorImgs(p) ? `
+    <div class="opt">
+      <div class="opt-head">اللون <span>${esc(detail.color || "")}</span></div>
+      <div class="sw-thumbs" role="group" aria-label="اللون">
+        ${p.colors.map((c) => `<button type="button" class="sw-thumb ${detail.color === c.name ? "on" : ""}" data-d="color" data-v="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${detail.color === c.name}" ${unCols.includes(c.name) ? "disabled" : ""}><img src="${esc(imgUrl(colorImgs(p, c.name)[0], 200))}" alt="" width="70" height="88" loading="lazy"></button>`).join("")}
+      </div>
     </div>` : p.colors.length ? `
     <div class="opt">
       <div class="opt-head">اللون <span>${esc(detail.color || "")}</span></div>
@@ -633,19 +667,41 @@ function renderBuy() {
         <output aria-live="polite">${detail.qty.toLocaleString("ar-EG")}</output>
         <button type="button" data-d="inc" aria-label="زيادة الكمية">+</button>
       </div>
-      <button type="button" class="btn ${needSize ? "is-needs" : ""}" id="addBtn" data-d="add" ${blocked ? "disabled" : ""}>${soon ? "قريباً جداً" : out ? "غير متاح" : soldOut ? "تم الوصول للحد الأقصى" : needSize ? "اختر المقاس" : `${ss === "preorder" ? "احجز الآن" : "أضف إلى السلة"} · ${money(unitPrice(p) * detail.qty)}`}</button>
+      <button type="button" class="btn ${needSize ? "is-needs" : ""}" id="addBtn" data-d="add" ${blocked ? "disabled" : ""}>${soon ? "قريباً جداً" : out ? "غير متاح" : soldOut ? "تم الوصول للحد الأقصى" : needSize ? "اختر المقاس" : `${ss === "preorder" ? "احجز عبر واتساب" : "أضف إلى السلة"} · ${money(unitPrice(p) * detail.qty)}`}</button>
     </div>
-    <button type="button" class="btn ghost buy-now" data-d="buynow" ${blocked ? "disabled" : ""} ${soon ? "hidden" : ""}>${ss === "preorder" ? "احجز مسبقًا الآن" : "اشترِ الآن"}</button>`;
+    <button type="button" class="btn ghost buy-now" data-d="buynow" ${blocked ? "disabled" : ""} ${soon || ss === "preorder" ? "hidden" : ""}>اشترِ الآن</button>`;
   // الشريط اللاصق
   const sa = $("#saBtn");
   if (sa) {
     $("#saPrice").textContent = money(unitPrice(p) * detail.qty);
-    sa.textContent = soon ? "قريباً جداً" : out ? "غير متاح" : ss === "preorder" ? "احجز الآن" : "أضف إلى السلة";
+    sa.textContent = soon ? "قريباً جداً" : out ? "غير متاح" : ss === "preorder" ? "احجز عبر واتساب" : "أضف إلى السلة";
     sa.disabled = blocked;
     sa.dataset.d = "add";
   }
   // إعادة ربط المراقب بالزر الجديد
   if (pdObserver) { pdObserver.disconnect(); const b = $("#addBtn"); if (b) pdObserver.observe(b); }
+}
+
+// حجز مسبق: يفتح واتساب برسالة منسّقة (المنتج/اللون/المقاس/الكمية) بدون المرور على السلة
+function reserveViaWhatsApp(p) {
+  const { color, size, qty } = detail;
+  const err = checkAdd(p, color, size, qty);
+  if (err) return toast(err);
+  const unit = unitPrice(p);
+  const link = `${location.origin}${location.pathname}${productHref(p.id)}`;
+  const lines = [
+    "*طلب حجز مسبق* 🛍️", "",
+    `المنتج: ${p.name}`,
+    `اللون: ${color}`,
+    `المقاس: ${size}`,
+    `الكمية: ${qty.toLocaleString("en-US")}`,
+    `سعر القطعة: ${money(unit)}`,
+    `*الإجمالي: ${money(unit * qty)}*`, "",
+    `رابط المنتج: ${link}`, "",
+    "أرجو تأكيد الحجز وتفاصيل الدفع والتسليم."
+  ];
+  const url = `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(lines.join("\n"))}`;
+  if (!window.open(url, "_blank", "noopener")) window.location.href = url;
 }
 
 function openSizeGuide() {
@@ -673,7 +729,7 @@ function sizeGuideHTML() {
 function openZoom(i) {
   if (!detail) return;
   const p = findProduct(detail.id);
-  const imgs = p.images?.length ? p.images : [p.image];
+  const imgs = colorImgs(p, detail.color);
   const z = $("#zoomImg");
   z.src = imgUrl(imgs[i] || imgs[0], 1800);
   z.alt = p.name;
@@ -1023,7 +1079,7 @@ function init() {
     const p = findProduct(detail.id);
     if (!p) return;
     switch (b.dataset.d) {
-      case "color": detail.color = b.dataset.v; break;
+      case "color": detail.color = b.dataset.v; renderGallery(p); break;
       case "size": detail.size = b.dataset.v; break;
       case "guide": return openSizeGuide();
       case "inc":
@@ -1044,6 +1100,7 @@ function init() {
           zs.classList.remove("nudge"); void zs.offsetWidth; zs.classList.add("nudge");
           return;
         }
+        if (saleStatus(p) === "preorder") return reserveViaWhatsApp(p);   // الحجز المسبق: واتساب مباشرة بدون سلة
         if (addToCart(p.id, detail.color, detail.size, detail.qty)) {
           detail.qty = 1;
           renderBuy();

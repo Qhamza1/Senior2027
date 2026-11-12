@@ -446,6 +446,5 @@ select:focus { outline: none; border-color: var(--fg); box-shadow: 0 0 0 1px var
 /* شارات الحالة */
 .badge.status { background: var(--fg); color: #fff; }
 .badge.status.soon { background: #fff; color: var(--fg); border: 1px solid var(--fg); }
-.card.is-soon .media img { filter: grayscale(.35); opacity: .9; }
 .avail.soon::before { background: var(--muted); }
 .avail.soon { color: var(--muted); }

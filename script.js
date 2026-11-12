@@ -12,14 +12,29 @@ const STORE_CONFIG = {
   // رقم واتساب الدولي بدون + ولا صفر (مصر = 20)
   whatsappNumber: "201066350362",
   // الشحن: فعّله (true) لإظهار حقلي المحافظة والعنوان
-  shippingEnabled: false,
+  shippingEnabled: true,
+  shippingFee: 100,   // رسوم الشحن الثابتة (ج.م)
+  governorates: ["القاهرة","الجيزة","الإسكندرية","القليوبية","الشرقية","الدقهلية","الغربية","المنوفية","كفر الشيخ","البحيرة","دمياط","بورسعيد","الإسماعيلية","السويس","شمال سيناء","جنوب سيناء","الفيوم","بني سويف","المنيا","أسيوط","سوهاج","قنا","الأقصر","أسوان","البحر الأحمر","الوادي الجديد","مطروح"],
   // أضف هنا رابط الخادم عند تشغيل Backend. فارغ = لا يتم حفظ الطلب على خادم
   ordersEndpoint: "",   // مثال: "https://your-server.com/api/orders"
   uploadEndpoint: "",   // مثال: "https://your-server.com/api/upload" (يرجع { url })
   maxProofMB: 5,
+  // دليل المقاسات (سم). ⚠ راجع الأرقام دي بقياسات الهودي الفعلية قبل النشر وعدّلها من هنا.
+  sizeChart: {
+    unit: "سم",
+    columns: ["عرض الصدر", "الطول", "طول الكم"],
+    rows: {
+      S:   [56, 68, 60],
+      M:   [58, 70, 62],
+      L:   [60, 72, 63],
+      XL:  [62, 74, 64],
+      XXL: [64, 76, 65]
+    }
+  },
   // اتركهم فارغين = المتجر يستخدم قايمة المنتجات الموجودة تحت في الملف فقط
   firebase: { projectId: "onefournine-64aac", apiKey: "AIzaSyBB6IiTJsuc3okPZINrsayYl6fU1m9fsYY" },
   payments: {
+    cod: { label: "الدفع عند الاستلام (COD)", type: "cod", value: "", recipient: "" },
     instapay: { label: "Instapay", type: "egp", value: "hamzayousry12@instapay", recipient: "حمزه", link: "https://ipn.eg/S/hamzayousry12/instapay/7mnK13" },
     vodafone: { label: "Vodafone Cash", type: "egp", value: "01066350362", recipient: "حمزه", link: "http://vf.eg/vfcash?id=mt&qrId=o6CZUu" }
   },
@@ -132,7 +147,7 @@ async function syncProducts() {
   saveCart();
   renderProducts();
   renderCart();
-  if ($("#productDialog").open && !findProduct(detail?.id)) closeDetail();
+  if (!$("#productView").hidden && !findProduct(detail?.id)) location.hash = "#products";
 }
 
 /* ==========================================================
@@ -154,7 +169,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic"];
 const FALLBACK_IMG = "this.onerror=null;this.src='images/placeholder.svg'";
 
 let cart = loadCart();
-let detail = null;       // اختيارات نافذة التفاصيل
+let detail = null;       // اختيارات صفحة المنتج
 let proofFile = null;
 let proofURL = null;
 
@@ -204,6 +219,15 @@ function loadCart() {
 function saveCart() {
   try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch { /* تخزين غير متاح */ }
   renderCartCount();
+}
+const shipFee = () => (STORE_CONFIG.shippingEnabled && cart.length ? STORE_CONFIG.shippingFee : 0);
+const orderTotal = () => cartTotal() + shipFee();
+const familyOf = (p) => { const b = p.name.split("·")[0].trim(); return products.filter((x) => x.name.split("·")[0].trim() === b); };
+const IC = (d) => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+async function shareProduct(p) {
+  const url = location.href;
+  try { if (navigator.share) return await navigator.share({ title: p.name, url }); } catch { return; }
+  copyText(url);
 }
 function usedStock(id) {
   return cart.filter((i) => i.id === id).reduce((a, i) => a + i.qty, 0);
@@ -285,129 +309,265 @@ function renderCart() {
   const n = cart.reduce((a, i) => a + i.qty, 0);
   $("#cartSub").textContent = n ? `(${n.toLocaleString("ar-EG")})` : "";
   $("#cartSubtotal").textContent = money(total);
-  $("#cartTotal").textContent = money(total);
   $("#checkoutBtn").disabled = !cart.length;
   renderCartCount();
 }
 
 /* ==========================================================
-   عرض المنتجات (بطاقة نظيفة: بدون مقاسات، المقاس في التفاصيل)
+   عرض المنتجات (بطاقة نظيفة: صورة + اسم + سعر، والتفاصيل في صفحة المنتج)
    ========================================================== */
-const ICON_BAG_PLUS = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2M12 11.5v5M9.5 14h5"/></svg>';
 const availColors = (p) => p.colors.filter((c) => !(p.unavailableColors || []).includes(c.name));
-function cardHTML(p) {
+const productHref = (id) => `#/p/${encodeURIComponent(id)}`;
+const LOW_STOCK = 5;
+function priceHTML(p, withChip = true) {
+  const d = discountPct(p);
+  return `<div class="price"><b>${money(unitPrice(p))}</b>${d ? `<s>${money(p.price)}</s>${withChip ? `<span class="off">-${d.toLocaleString("ar-EG")}%</span>` : ""}` : ""}</div>`;
+}
+function cardHTML(p, isNew = false) {
   const d = discountPct(p);
   const imgs = p.images?.length ? p.images : [p.image];
   const out = p.stock <= 0;
   const cols = availColors(p);
   return `
-  <article class="card${out ? " is-out" : ""}" data-id="${esc(p.id)}">
-    <div class="media-wrap">
-      <button type="button" class="media" data-act="details" aria-label="عرض تفاصيل ${esc(p.name)}">
-        <img class="img-main" src="${esc(imgUrl(p.image, 600))}" alt="${esc(p.name)}" width="600" height="750" loading="lazy" decoding="async" onerror="${FALLBACK_IMG}">
-        ${imgs[1] ? `<img class="img-alt" src="${esc(imgUrl(imgs[1], 600))}" alt="" width="600" height="750" loading="lazy" decoding="async" aria-hidden="true">` : ""}
-      </button>
-      ${out ? `<span class="badge out">نفد</span>` : d ? `<span class="badge" dir="ltr">-${d.toLocaleString("ar-EG")}%</span>` : ""}
-      ${cols.length ? `<span class="dots" role="img" aria-label="الألوان المتاحة: ${esc(cols.map((c) => c.name).join("، "))}">${cols.slice(0, 4).map((c) => `<i class="dot" style="background:${esc(c.value)}"></i>`).join("")}</span>` : ""}
-      <button type="button" class="quick" data-act="add" aria-label="أضف ${esc(p.name)} إلى السلة" ${out ? "disabled" : ""}>${ICON_BAG_PLUS}</button>
+  <a class="card${out ? " is-out" : ""}" href="${productHref(p.id)}" data-id="${esc(p.id)}" aria-label="${esc(p.name)}">
+    <div class="media">
+      <img class="img-main" src="${esc(imgUrl(p.image, 600))}" alt="${esc(p.name)}" width="600" height="750" loading="lazy" decoding="async" onerror="${FALLBACK_IMG}">
+      ${imgs[1] ? `<img class="img-alt" src="${esc(imgUrl(imgs[1], 600))}" alt="" width="600" height="750" loading="lazy" decoding="async" aria-hidden="true">` : ""}
+      ${out ? `<span class="badge out">نفد</span>` : isNew ? `<span class="badge" dir="ltr">NEW IN</span>` : d ? `<span class="badge" dir="ltr">SALE</span>` : ""}
+      ${cols.length > 1 ? `<span class="dots" role="img" aria-label="الألوان المتاحة: ${esc(cols.map((c) => c.name).join("، "))}">${cols.slice(0, 5).map((c) => `<i class="dot" style="background:${esc(c.value)}"></i>`).join("")}</span>` : ""}
     </div>
     <div class="body">
-      <h3><button type="button" class="name" data-act="details">${esc(p.name)}</button></h3>
-      <p class="desc">${esc(p.description)}</p>
-      <div class="price">
-        <b>${money(unitPrice(p))}</b>${d ? `<s>${money(p.price)}</s>` : ""}
-      </div>
-      <button type="button" class="btn ghost sm" data-act="details">عرض التفاصيل</button>
+      <h3>${esc(p.name)}</h3>
+      ${priceHTML(p)}
+      <span class="choose">${out ? "نفد المخزون" : "اختر المقاس"}</span>
     </div>
-  </article>`;
+  </a>`;
 }
 function renderProducts() {
   $("#productGrid").innerHTML = products.map(cardHTML).join("") || `<p class="empty">لا توجد منتجات الآن.</p>`;
   $("#prodCount").textContent = products.length ? `(${products.length.toLocaleString("ar-EG")})` : "";
+  updateAnnounce();
+}
+function updateAnnounce() {
+  const max = Math.max(0, ...products.map(discountPct));
+  $("#announceText").textContent = max ? `خصم حتى ${max.toLocaleString("ar-EG")}٪ · الدفع عند الاستلام أو فودافون كاش أو InstaPay` : "الدفع عند الاستلام أو فودافون كاش أو InstaPay";
 }
 
 /* ==========================================================
-   تفاصيل المنتج
+   صفحة المنتج (مسار: #/p/ID — يعمل مع زر الرجوع في أندرويد)
    ========================================================== */
-function openDetail(id, askSize = false) {
-  const dlg = $("#productDialog");
-  const p = findProduct(id);
-  if (dlg.open || !p) return;
-  const firstColor = (availColors(p)[0] || p.colors[0])?.name || null;
-  detail = { id, color: firstColor, size: null, qty: 1, img: 0, fade: false };
-  renderDetail();
-  document.body.classList.add("pd-lock");   // يمنع تمرير الصفحة خلف النافذة
-  dlg.showModal();
-  (p.images || []).forEach((src) => { new Image().src = imgUrl(src, 900); });
-  if (askSize) {
-    toast("اختر المقاس ثم أضف للسلة");
-    setTimeout(() => $("#pdSizes")?.scrollIntoView({ block: "center", behavior: "smooth" }), 120);
+let homeScroll = 0;
+const ICON_CHECK = "";
+function setView(name) {
+  $("#homeView").hidden = name !== "home";
+  $("#productView").hidden = name !== "product";
+  $("#topbar").classList.remove("is-hidden");
+  document.title = name === "home" ? "Onefournine | 149" : document.title;
+}
+function route() {
+  const h = location.hash || "";
+  const m = h.match(/^#\/p\/(.+)$/);
+  const id = m ? decodeURIComponent(m[1]) : null;
+  const wasProduct = !$("#productView").hidden;
+  if (id && findProduct(id)) {
+    if (!wasProduct) homeScroll = window.scrollY;
+    showProduct(id);
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+    return;
   }
+  if (wasProduct) { teardownProduct(); }
+  setView("home");
+  const target = h.length > 1 && !h.startsWith("#/") ? document.getElementById(h.slice(1)) : null;
+  requestAnimationFrame(() => {
+    if (target) target.scrollIntoView();
+    else if (wasProduct) window.scrollTo(0, homeScroll);
+  });
 }
-// إغلاق بحركة ناعمة ثم إغلاق الـ dialog فعليًا
-function closeDetail() {
-  const dlg = $("#productDialog");
-  if (!dlg.open || dlg.classList.contains("is-closing")) return;
-  dlg.classList.add("is-closing");
-  clearTimeout(closeDetail.timer);
-  closeDetail.timer = setTimeout(() => {
-    dlg.classList.remove("is-closing");
-    dlg.close();
-  }, 220);
+
+let pdObserver = null;
+function teardownProduct() {
+  if (pdObserver) { pdObserver.disconnect(); pdObserver = null; }
+  detail = null;
+  $("#productView").innerHTML = "";
 }
-function renderDetail() {
-  const p = findProduct(detail.id);
+
+function showProduct(id) {
+  const p = findProduct(id);
+  teardownProduct();
+  const firstColor = (availColors(p)[0] || p.colors[0])?.name || null;
+  detail = { id, color: firstColor, size: null, qty: 1 };
+  document.title = `${p.name} | Onefournine`;
   const d = discountPct(p);
   const imgs = p.images?.length ? p.images : [p.image];
-  const idx = Math.min(detail.img || 0, imgs.length - 1);
-  const left = p.stock - usedStock(p.id);
-  const out = p.stock <= 0;
-  const st = out ? ["out", "نفد المخزون"] : left <= 5 ? ["low", `آخر ${Math.max(left, 0).toLocaleString("ar-EG")} قطع متاحة`] : ["ok", "متوفر"];
-  const oldScroll = $("#productDetail .pd-scroll")?.scrollTop || 0;
-  $("#productDetail").innerHTML = `
-    <button type="button" class="pd-close" data-close aria-label="إغلاق">×</button>
-    <div class="pd-scroll">
-      <div class="pd-gallery">
-        <div class="pd-main" id="pdMain">
-          <img class="d-img${detail.fade ? " fade" : ""}" src="${esc(imgUrl(imgs[idx], 900))}" alt="${esc(p.name)}" onerror="${FALLBACK_IMG}">
+  const others = products.filter((x) => x.id !== id).slice(0, 4);
+  $("#productView").innerHTML = `
+    <div class="wrap">
+      <nav class="crumbs" aria-label="مسار التنقل"><a href="#top">الرئيسية</a><span aria-hidden="true">/</span><a href="#products">المنتجات</a><span aria-hidden="true">/</span><span>${esc(p.name)}</span></nav>
+      <div class="pdp">
+        <div class="pg-wrap">
+          <div class="pg" id="pg" aria-label="صور المنتج">
+            ${imgs.map((src, i) => `
+            <button type="button" class="pg-item" data-zoom="${i}" aria-label="تكبير الصورة ${i + 1}">
+              <img src="${esc(imgUrl(src, 1100))}" alt="${esc(p.name)} - ${i + 1}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" onerror="${FALLBACK_IMG}">
+            </button>`).join("")}
+          </div>
           ${d ? `<span class="badge" dir="ltr">-${d.toLocaleString("ar-EG")}%</span>` : ""}
+          ${imgs.length > 1 ? `<span class="pg-count" id="pgCount">1 / ${imgs.length}</span>` : ""}
+          ${imgs.length > 1 ? `<div class="pg-dots" id="pgDots" aria-hidden="true">${imgs.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("")}</div>` : ""}
         </div>
-        ${imgs.length > 1 ? `<div class="thumbs">${imgs.map((src, i) => `
-          <button type="button" class="thumb ${i === idx ? "on" : ""}" data-d="img" data-v="${i}" aria-label="صورة ${i + 1}" aria-pressed="${i === idx}">
-            <img src="${esc(imgUrl(src, 160))}" alt="" loading="lazy">
-          </button>`).join("")}</div>` : ""}
+        <div class="info">
+          <h1>${esc(p.name)}</h1>
+          ${priceHTML(p)}
+          <div id="buyBox"></div>
+          <div class="gtk">
+            <h4>مهم تعرفه</h4>
+            <ul>
+              <li>${IC('<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/>')}الدفع عند الاستلام متاح</li>
+              <li>${IC('<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/>')}التوصيل خلال ٢–٥ أيام عمل</li>
+              <li>${IC('<path d="M20 11a8 8 0 0 0-14-4L4 9M4 4v5h5M4 13a8 8 0 0 0 14 4l2-2M20 20v-5h-5"/>')}استرجاع واستبدال سهل</li>
+            </ul>
+          </div>
+          <div class="pd-acc">
+            <div class="acc-item open">
+              <h3><button class="acc-q" id="dq1" type="button" aria-expanded="true" aria-controls="da1">التفاصيل<span class="plus" aria-hidden="true"></span></button></h3>
+              <div class="acc-a" id="da1" role="region" aria-labelledby="dq1"><div><p>${esc(p.description || "")} تقدر تطبع اسمك على القطعة (حتى ٢٠ حرف) أثناء إتمام الطلب.</p></div></div>
+            </div>
+            <div class="acc-item">
+              <h3><button class="acc-q" id="dq2" type="button" aria-expanded="false" aria-controls="da2">الشحن<span class="plus" aria-hidden="true"></span></button></h3>
+              <div class="acc-a" id="da2" role="region" aria-labelledby="dq2"><div><p>رسوم الشحن ${money(STORE_CONFIG.shippingFee)} لكل المحافظات، والتوصيل خلال ٢–٥ أيام عمل. الدفع عند الاستلام أو فودافون كاش أو InstaPay.</p></div></div>
+            </div>
+            <div class="acc-item">
+              <h3><button class="acc-q" id="dq3" type="button" aria-expanded="false" aria-controls="da3">دليل المقاسات<span class="plus" aria-hidden="true"></span></button></h3>
+              <div class="acc-a" id="da3" role="region" aria-labelledby="dq3"><div>${sizeGuideHTML()}</div></div>
+            </div>
+          </div>
+          <button type="button" class="share-btn" data-d="share">${IC('<path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/>')}مشاركة</button>
+        </div>
       </div>
-      <div class="pd-info">
-        <h2>${esc(p.name)}</h2>
-        <div class="price"><b>${money(unitPrice(p))}</b>${d ? `<s>${money(p.price)}</s><span class="off" dir="ltr">-${d.toLocaleString("ar-EG")}%</span>` : ""}</div>
-        <p class="desc">${esc(p.description)}</p>
-        <div class="stock ${st[0]}">${st[1]}</div>
-        <div class="opt-head">اللون <span>${esc(detail.color || "")}</span></div>
-        <div class="swatches">
-          ${p.colors.map((c) => `<button type="button" class="swatch ${detail.color === c.name ? "on" : ""}"
-            style="background:${esc(c.value)}" data-d="color" data-v="${esc(c.name)}" aria-label="${esc(c.name)}"
-            aria-pressed="${detail.color === c.name}" ${(p.unavailableColors || []).includes(c.name) ? "disabled" : ""}></button>`).join("")}
-        </div>
-        <div class="opt-head">المقاس <span>${esc(detail.size || "اختر المقاس")}</span></div>
-        <div class="sizes" id="pdSizes">
-          ${p.sizes.map((z) => `<button type="button" class="size ${detail.size === z ? "on" : ""}" data-d="size" data-v="${esc(z)}"
-            aria-pressed="${detail.size === z}" ${(p.unavailableSizes || []).includes(z) ? "disabled" : ""}>${esc(z)}</button>`).join("")}
-        </div>
-        <div class="opt-head">الكمية</div>
-        <div class="qty">
-          <button type="button" data-d="dec" aria-label="تقليل الكمية">−</button>
-          <output aria-live="polite">${detail.qty.toLocaleString("ar-EG")}</output>
-          <button type="button" data-d="inc" aria-label="زيادة الكمية">+</button>
-        </div>
-      </div>
+      ${others.length ? `<section class="related" aria-label="منتجات أخرى"><h2>قد يعجبك أيضًا</h2><div class="grid">${others.map((x) => cardHTML(x, true)).join("")}</div></section>` : ""}
     </div>
-    <div class="pd-bar">
-      <div class="pd-total"><span>الإجمالي</span><b>${money(unitPrice(p) * detail.qty)}</b></div>
-      <button type="button" class="btn" data-d="add" ${out ? "disabled" : ""}>${out ? "غير متاح" : "أضف إلى السلة"}</button>
+    <div class="sticky-atc" id="stickyAtc" aria-hidden="true">
+      <div class="sa-info"><span class="sa-name">${esc(p.name)}</span><span class="sa-price" id="saPrice"></span></div>
+      <button type="button" class="btn" id="saBtn" tabindex="-1"></button>
     </div>`;
-  detail.fade = false;
-  const sc = $("#productDetail .pd-scroll");
-  if (sc) sc.scrollTop = oldScroll;
+  setView("product");
+  renderBuy();
+  (p.images || []).forEach((src) => { new Image().src = imgUrl(src, 1100); });
+
+  // نقاط المعرض + العدّاد أثناء السحب
+  const pg = $("#pg");
+  if (imgs.length > 1 && pg) {
+    pg.addEventListener("scroll", () => {
+      const w = pg.clientWidth || 1;
+      const i = Math.min(imgs.length - 1, Math.max(0, Math.round(Math.abs(pg.scrollLeft) / w)));
+      $("#pgCount").textContent = `${i + 1} / ${imgs.length}`;
+      document.querySelectorAll("#pgDots i").forEach((el, n) => el.classList.toggle("on", n === i));
+    }, { passive: true });
+  }
+
+  // شريط الإضافة اللاصق يظهر لما زر الإضافة الأساسي يخرج من الشاشة
+  const addBtn = $("#addBtn");
+  if (addBtn && "IntersectionObserver" in window) {
+    pdObserver = new IntersectionObserver(([en]) => {
+      const bar = $("#stickyAtc");
+      if (!bar) return;
+      const show = !en.isIntersecting && en.boundingClientRect.top < 0;
+      bar.classList.toggle("show", show);
+      bar.setAttribute("aria-hidden", String(!show));
+      $("#saBtn").tabIndex = show ? 0 : -1;
+    }, { threshold: 0 });
+    pdObserver.observe(addBtn);
+  }
+}
+
+// يعيد رسم صندوق الشراء فقط (اللون/المقاس/الكمية/الزر) بدون لمس المعرض
+function renderBuy() {
+  if (!detail) return;
+  const p = findProduct(detail.id);
+  if (!p) return;
+  const left = Math.max(p.stock - usedStock(p.id), 0);
+  const out = p.stock <= 0;
+  const soldOut = !out && left <= 0;
+  const st = out ? ["out", "نفد المخزون"] : soldOut ? ["out", "وصلت للحد الأقصى المتاح في السلة"] : left <= LOW_STOCK ? ["low", `آخر ${left.toLocaleString("ar-EG")} قطع متاحة`] : ["ok", "متوفر"];
+  const unSizes = p.unavailableSizes || [];
+  const unCols = p.unavailableColors || [];
+  const lowAll = !out && left <= LOW_STOCK;
+  const fam = familyOf(p);
+  const needSize = !detail.size && !out && !soldOut;
+  $("#buyBox").innerHTML = `
+    <div class="avail ${st[0]}">${st[1]}</div>
+    ${fam.length > 1 ? `
+    <div class="opt">
+      <div class="opt-head">اللون <span>${esc(detail.color || "")}</span></div>
+      <div class="sw-thumbs" role="group" aria-label="اللون">
+        ${fam.map((x) => `<a class="sw-thumb ${x.id === p.id ? "on" : ""}" href="${productHref(x.id)}" aria-label="${esc(x.name)}" ${x.id === p.id ? 'aria-current="true"' : ""}><img src="${esc(imgUrl(x.image, 200))}" alt="" width="70" height="88" loading="lazy"></a>`).join("")}
+      </div>
+    </div>` : p.colors.length ? `
+    <div class="opt">
+      <div class="opt-head">اللون <span>${esc(detail.color || "")}</span></div>
+      <div class="swatches" role="group" aria-label="اللون">
+        ${p.colors.map((c) => `<button type="button" class="swatch ${detail.color === c.name ? "on" : ""}" style="background:${esc(c.value)}" data-d="color" data-v="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${detail.color === c.name}" ${unCols.includes(c.name) ? "disabled" : ""}></button>`).join("")}
+      </div>
+    </div>` : ""}
+    <div class="opt">
+      <div class="opt-head">المقاس <button type="button" class="link-btn" data-d="guide">دليل المقاسات</button></div>
+      <div class="sizes" id="pdSizes" role="group" aria-label="المقاس">
+        ${p.sizes.map((z) => `<button type="button" class="size ${detail.size === z ? "on" : ""} ${lowAll ? "low" : ""}" data-d="size" data-v="${esc(z)}" aria-pressed="${detail.size === z}" ${unSizes.includes(z) ? "disabled" : ""}>${esc(z)}</button>`).join("")}
+      </div>
+      <p class="size-note" id="sizeNote" role="status">${detail.size ? `المقاس المختار: ${esc(detail.size)}` : "اختر المقاس"}</p>
+    </div>
+    <p class="ship-note"><i aria-hidden="true"></i>الطلبات تُشحن خلال ٢–٥ أيام.</p>
+    <div class="buy-row">
+      <div class="qty">
+        <button type="button" data-d="dec" aria-label="تقليل الكمية">−</button>
+        <output aria-live="polite">${detail.qty.toLocaleString("ar-EG")}</output>
+        <button type="button" data-d="inc" aria-label="زيادة الكمية">+</button>
+      </div>
+      <button type="button" class="btn ${needSize ? "is-needs" : ""}" id="addBtn" data-d="add" ${out || soldOut ? "disabled" : ""}>${out ? "غير متاح" : soldOut ? "تم الوصول للحد الأقصى" : needSize ? "اختر المقاس" : `أضف إلى السلة · ${money(unitPrice(p) * detail.qty)}`}</button>
+    </div>
+    <button type="button" class="btn ghost buy-now" data-d="buynow" ${out || soldOut ? "disabled" : ""}>اشترِ الآن</button>`;
+  // الشريط اللاصق
+  const sa = $("#saBtn");
+  if (sa) {
+    $("#saPrice").textContent = money(unitPrice(p) * detail.qty);
+    sa.textContent = out ? "غير متاح" : "أضف إلى السلة";
+    sa.disabled = out || soldOut;
+    sa.dataset.d = "add";
+  }
+  // إعادة ربط المراقب بالزر الجديد
+  if (pdObserver) { pdObserver.disconnect(); const b = $("#addBtn"); if (b) pdObserver.observe(b); }
+}
+
+function openSizeGuide() {
+  const c = STORE_CONFIG.sizeChart;
+  const p = detail ? findProduct(detail.id) : null;
+  $("#sizeGuide").innerHTML = sizeGuideHTML();
+  $("#sizeDialog").showModal();
+}
+function sizeGuideHTML() {
+  const c = STORE_CONFIG.sizeChart;
+  const sizes = Object.keys(c.rows);
+  return `
+    <div class="sg-table-wrap"><table class="sg-table">
+      <thead><tr><th>SIZE</th>${c.columns.map((x) => `<th dir="rtl">${esc(x)}</th>`).join("")}</tr></thead>
+      <tbody>${sizes.map((z) => `<tr class="${detail?.size === z ? "hl" : ""}"><th scope="row">${esc(z)}</th>${c.rows[z].map((v) => `<td>${Number(v).toLocaleString("en")}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table></div>
+    <p class="sg-unit">كل القياسات بالـ${esc(c.unit)} وممكن يكون فيها فرق بسيط (١–٢ ${esc(c.unit)}).</p>
+    <ul class="sg-tips">
+      <li><b>عرض الصدر:</b> قيس من تحت الإبط للإبط والقطعة مفرودة على سطح مستوي.</li>
+      <li><b>الطول:</b> من أعلى الكتف جنب الرقبة لحد نهاية الهودي.</li>
+      <li><b>مش متأكد من مقاسك؟</b> قارن القياسات بهودي بيريحك، أو كلمنا على واتساب.</li>
+    </ul>`;
+}
+
+function openZoom(i) {
+  if (!detail) return;
+  const p = findProduct(detail.id);
+  const imgs = p.images?.length ? p.images : [p.image];
+  const z = $("#zoomImg");
+  z.src = imgUrl(imgs[i] || imgs[0], 1800);
+  z.alt = p.name;
+  $("#zoomDialog").showModal();
 }
 
 /* ==========================================================
@@ -444,14 +604,19 @@ function clearProof() {
    ========================================================== */
 function renderPayInfo() {
   const key = document.querySelector('input[name="pay"]:checked')?.value;
-  setStep(key ? 3 : 2);
+  setStep(key ? (key === "cod" ? 4 : 3) : 2);
+  $("#proofBlock").hidden = key === "cod";
   const box = $("#payInfo");
   if (!key) {
     box.innerHTML = `<p class="muted">اختر وسيلة الدفع لتظهر لك خطوات الدفع.</p>`;
     return;
   }
   const m = STORE_CONFIG.payments[key];
-  const total = cartTotal();
+  const total = orderTotal();
+  if (key === "cod") {
+    box.innerHTML = `<div class="pay-card"><div class="pay-amount"><span>المبلغ عند الاستلام (شامل الشحن)</span><b>${money(total)}</b></div><p class="pay-hint">هتدفع كاش للمندوب وقت استلام طلبك. بنأكد معاك على واتساب قبل الشحن.</p></div>`;
+    return;
+  }
   box.innerHTML = `
     <div class="pay-card">
       <div class="pay-amount"><span>المبلغ المطلوب</span><b>${money(total)}</b></div>
@@ -470,15 +635,16 @@ function validateForm(f) {
   const name = (d.get("name") || "").trim();
   const phone = normPhone(d.get("phone"));
   const print = (d.get("printName") || "").trim();
-  if (name.length < 3) return "اكتب اسمك الكامل، 3 حروف على الأقل.";
+  if (name.length < 10) return "اكتب اسمك الكامل ،اوالثلاثي على الأقل.";
   if (!/^01[0125]\d{8}$/.test(phone)) return "اكتب رقم موبايل مصري صحيح من 11 رقم يبدأ بـ 01.";
-  if (print && !/^[\p{L}\p{N} .\-]{1,20}$/u.test(print)) return "الاسم المطلوب طباعته: حروف وأرقام فقط، حتى 20 حرفًا.";
+  if (print && !/^[\p{L}\p{N} .\-]{1,10}$/u.test(print)) return "الاسم المطلوب طباعته: حروف وأرقام فقط، حتى 10 حرفًا.";
   if (STORE_CONFIG.shippingEnabled) {
-    if (!(d.get("governorate") || "").trim()) return "اكتب المحافظة.";
+    if (!(d.get("governorate") || "").trim()) return "اختر المحافظة.";
+    if ((d.get("city") || "").trim().length < 2) return "اكتب المدينة أو المنطقة.";
     if ((d.get("address") || "").trim().length < 10) return "اكتب العنوان بالتفصيل.";
   }
   if (!d.get("pay")) return "اختر وسيلة الدفع.";
-  if (!proofFile) return "ارفع صورة إثبات التحويل.";
+  if (d.get("pay") !== "cod" && !proofFile) return "ارفع صورة إثبات التحويل.";
   return "";
 }
 
@@ -490,8 +656,12 @@ function openCheckout() {
   $("#shipBlock").hidden = !STORE_CONFIG.shippingEnabled;
   $("#orderSummary").innerHTML = cart.map((i) => {
     const p = findProduct(i.id);
-    return `<div class="sum-row"><span>${p.name} · ${i.color} · ${i.size} × ${i.qty}</span><b>${money(unitPrice(p) * i.qty)}</b></div>`;
-  }).join("") + `<div class="sum-row total"><span>الإجمالي</span><b>${money(cartTotal())}</b></div>`;
+    return `<div class="sum-row"><span>${esc(p.name)} · ${esc(i.color)} · ${esc(i.size)} × ${i.qty}</span><b>${money(unitPrice(p) * i.qty)}</b></div>`;
+  }).join("") + `<div class="sum-row"><span>المجموع الفرعي</span><b>${money(cartTotal())}</b></div><div class="sum-row"><span>الشحن</span><b>${money(shipFee())}</b></div><div class="sum-row total"><span>الإجمالي</span><b>${money(orderTotal())}</b></div>`;
+  $("#coTotal").textContent = money(cartTotal());
+  $("#coGrand").textContent = money(orderTotal());
+  $("#coShip").hidden = !shipFee();
+  $("#coShipFee").textContent = money(shipFee());
   renderPayInfo();
   setErr("");
   setStep(2);
@@ -521,6 +691,7 @@ function buildOrder(f) {
       phone: normPhone(d.get("phone")),
       printName: (d.get("printName") || "").trim(),
       governorate: STORE_CONFIG.shippingEnabled ? d.get("governorate").trim() : "",
+      city: STORE_CONFIG.shippingEnabled ? (d.get("city") || "").trim() : "",
       address: STORE_CONFIG.shippingEnabled ? d.get("address").trim() : ""
     },
     items: cart.map((i) => {
@@ -530,11 +701,13 @@ function buildOrder(f) {
         originalPrice: p.price, discount: discountPct(p), unitPrice: unitPrice(p)
       };
     }),
-    total: cartTotal(), // الخادم يجب أن يعيد حسابه من المنتجات الموثوقة
+    subtotal: cartTotal(),
+    shipping: shipFee(),
+    total: orderTotal(), // الخادم يجب أن يعيد حسابه من المنتجات الموثوقة
     payment: {
       method: key, type: pay.type, label: pay.label, recipient: pay.recipient || ""
     },
-    status: "في انتظار مراجعة الدفع",
+    status: key === "cod" ? "دفع عند الاستلام - في انتظار التأكيد" : "في انتظار مراجعة الدفع",
     proofUrl: null
   };
 }
@@ -548,7 +721,7 @@ function waURL(o) {
     `رقم الهاتف: ${o.customer.phone}`,
     `الاسم المطلوب طباعته: ${o.customer.printName || "-"}`
   ];
-  if (STORE_CONFIG.shippingEnabled) lines.push(`المحافظة: ${o.customer.governorate}`, `العنوان: ${o.customer.address}`);
+  if (STORE_CONFIG.shippingEnabled) lines.push(`المحافظة: ${o.customer.governorate}`, `المدينة: ${o.customer.city}`, `العنوان: ${o.customer.address}`);
   lines.push("", "*المنتجات:*");
   o.items.forEach((i, n) => {
     lines.push(`${n + 1}) ${i.name} | ${i.color} | ${i.size} | الكمية: ${i.qty}`);
@@ -556,14 +729,10 @@ function waURL(o) {
       ? `   السعر الأصلي: ${money(i.originalPrice)} | الخصم: ${i.discount}% | سعر القطعة: ${money(i.unitPrice)}`
       : `   سعر القطعة: ${money(i.unitPrice)}`);
   });
-  lines.push(
-    "",
-    `*الإجمالي: ${money(o.total)}*`,
-    `وسيلة الدفع: ${o.payment.label}`,
-    `اسم المستلم: ${o.payment.recipient}`,
-    o.proofUrl ? `رابط إثبات التحويل: ${o.proofUrl}` : "صورة إثبات التحويل: سأرسلها في المحادثة.",
-    `حالة الطلب: ${o.status}`
-  );
+  const cod = o.payment.method === "cod";
+  lines.push("", `المجموع الفرعي: ${money(o.subtotal)}`, `الشحن: ${money(o.shipping)}`, `*الإجمالي: ${money(o.total)}*`, `وسيلة الدفع: ${o.payment.label}`);
+  if (!cod) lines.push(`اسم المستلم: ${o.payment.recipient}`, o.proofUrl ? `رابط إثبات التحويل: ${o.proofUrl}` : "صورة إثبات التحويل: سأرسلها في المحادثة.");
+  lines.push(`حالة الطلب: ${o.status}`);
   return `https://wa.me/${STORE_CONFIG.whatsappNumber}?text=${encodeURIComponent(lines.join("\n"))}`;
 }
 
@@ -650,7 +819,7 @@ async function onSubmit(e) {
     const order = buildOrder(form);
     // رفع صورة الإثبات (imgbb أو uploadEndpoint) ويتضاف رابطها في رسالة واتساب.
     // لو الرفع فشل، الطلب يكمل والعميل يبعت الصورة في المحادثة.
-    if (STORE_CONFIG.imgbbKey || STORE_CONFIG.uploadEndpoint) {
+    if (proofFile && (STORE_CONFIG.imgbbKey || STORE_CONFIG.uploadEndpoint)) {
       try { order.proofUrl = await uploadProof(); } catch { order.proofUrl = null; }
     }
     if (STORE_CONFIG.ordersEndpoint) await postOrder(order);
@@ -675,6 +844,7 @@ async function onSubmit(e) {
    التهيئة والأحداث
    ========================================================== */
 function init() {
+  document.querySelectorAll("[data-ship-fee]").forEach((el) => { el.textContent = money(STORE_CONFIG.shippingFee); });
   $("#footerText").textContent = STORE_CONFIG.footerText;
   $("#devText").textContent = STORE_CONFIG.developer;
   $("#year").textContent = new Date().getFullYear();
@@ -684,6 +854,7 @@ function init() {
     else a.hidden = true; // لا تظهر الرابط قبل وضعه
   });
 
+  $("#cGov").innerHTML = `<option value="">اختر المحافظة</option>` + STORE_CONFIG.governorates.map((g) => `<option>${esc(g)}</option>`).join("");
   renderProducts();
   renderCart();
   syncProducts();
@@ -724,54 +895,57 @@ function init() {
     if (willOpen) { item.classList.add("open"); q.setAttribute("aria-expanded", "true"); }
   });
 
-  /* بطاقات المنتجات: الصورة/الاسم/الزر يفتحوا التفاصيل، وزر + يفتحها لاختيار المقاس */
-  $("#productGrid").addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-act]");
-    if (!b) return;
-    const id = b.closest("[data-id]").dataset.id;
-    openDetail(id, b.dataset.act === "add");
-  });
-
-  $("#productDetail").addEventListener("click", (e) => {
+  /* صفحة المنتج: اللون / المقاس / الكمية / الإضافة / الدليل / التكبير / الأكورديون */
+  $("#productView").addEventListener("click", (e) => {
+    const z = e.target.closest("[data-zoom]");
+    if (z) return openZoom(Number(z.dataset.zoom));
+    const q = e.target.closest(".pd-acc .acc-q");
+    if (q) {
+      const item = q.closest(".acc-item");
+      const open = !item.classList.contains("open");
+      item.classList.toggle("open", open);
+      q.setAttribute("aria-expanded", String(open));
+      return;
+    }
     const b = e.target.closest("button[data-d]");
-    if (!b) return;
+    if (!b || !detail) return;
     const p = findProduct(detail.id);
+    if (!p) return;
     switch (b.dataset.d) {
       case "color": detail.color = b.dataset.v; break;
       case "size": detail.size = b.dataset.v; break;
+      case "guide": return openSizeGuide();
       case "inc":
         if (usedStock(p.id) + detail.qty >= p.stock) return toast(`الكمية المتاحة ${p.stock} قطعة فقط.`);
         detail.qty++;
         break;
       case "dec": detail.qty = Math.max(1, detail.qty - 1); break;
-      case "img": detail.img = Number(b.dataset.v); detail.fade = true; break;
+      case "share": return shareProduct(p);
+      case "buynow":
+        if (!detail.size) { toast("لازم تختار المقاس"); const zs = $("#pdSizes"); zs.scrollIntoView({ block: "center", behavior: "smooth" }); zs.classList.remove("nudge"); void zs.offsetWidth; zs.classList.add("nudge"); return; }
+        if (addToCart(p.id, detail.color, detail.size, detail.qty)) { detail.qty = 1; renderBuy(); openCheckout(); }
+        return;
       case "add":
         if (!detail.size) {
           toast("لازم تختار المقاس");
-          const z = $("#pdSizes");
-          z.scrollIntoView({ block: "center", behavior: "smooth" });
-          z.classList.remove("nudge"); void z.offsetWidth; z.classList.add("nudge");
+          const zs = $("#pdSizes");
+          zs.scrollIntoView({ block: "center", behavior: "smooth" });
+          zs.classList.remove("nudge"); void zs.offsetWidth; zs.classList.add("nudge");
           return;
         }
-        if (addToCart(p.id, detail.color, detail.size, detail.qty)) closeDetail();
+        if (addToCart(p.id, detail.color, detail.size, detail.qty)) {
+          detail.qty = 1;
+          renderBuy();
+          $("#cartDialog").showModal();   // زي المرجع: تفتح السلة بعد الإضافة
+        }
         return;
     }
-    renderDetail();
+    renderBuy();
   });
 
-  /* سحب أفقي على صورة التفاصيل للتنقل بين الصور */
-  let sx = null;
-  $("#productDetail").addEventListener("touchstart", (e) => { sx = e.target.closest("#pdMain") ? e.touches[0].clientX : null; }, { passive: true });
-  $("#productDetail").addEventListener("touchend", (e) => {
-    if (sx === null || !detail) return;
-    const dx = e.changedTouches[0].clientX - sx;
-    sx = null;
-    const n = (findProduct(detail.id).images || []).length;
-    if (Math.abs(dx) < 45 || n < 2) return;
-    detail.img = (detail.img + (dx < 0 ? 1 : -1) + n) % n;   // RTL: السحب لليسار = التالي
-    detail.fade = true;
-    renderDetail();
-  });
+  /* الراوتر: #/p/ID لصفحة المنتج، وباقي الروابط للأقسام */
+  addEventListener("hashchange", route);
+  route();
 
   $("#cartItems").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-c]");
@@ -815,19 +989,14 @@ function init() {
 
   $("#orderForm").addEventListener("submit", onSubmit);
 
-  // نافذة التفاصيل: إغلاق بالضغط خارج البطاقة أو بزر Esc/رجوع الأندرويد، وفك قفل التمرير
-  const pDlg = $("#productDialog");
-  pDlg.addEventListener("click", (e) => { if (e.target === pDlg) closeDetail(); });
-  pDlg.addEventListener("cancel", (e) => { e.preventDefault(); closeDetail(); });
-  pDlg.addEventListener("close", () => { document.body.classList.remove("pd-lock"); });
+  // إغلاق النوافذ بالضغط على الخلفية
+  document.querySelectorAll("dialog").forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
 
   // أزرار الإغلاق
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-close]");
     if (!b) return;
-    const dlg = b.closest("dialog");
-    if (dlg?.id === "productDialog") closeDetail();
-    else dlg?.close();
+    b.closest("dialog")?.close();
   });
 }
 
@@ -841,8 +1010,3 @@ document.addEventListener("error", (e) => {
     t.src = "images/placeholder.svg";
   }
 }, true);
-
-
-// منع الزوم (pinch / double-tap)
-["gesturestart","gesturechange","gestureend"].forEach((t) => document.addEventListener(t, (e) => e.preventDefault()));
-document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });

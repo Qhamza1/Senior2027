@@ -1,5 +1,5 @@
-const CACHE = "onefournine-v2";
-const CORE = ["./", "index.html", "style.css", "script.js", "pwa.js", "icon-192.png", "icon-512.png"];
+const CACHE = "onefournine-v8";
+const CORE = ["./", "index.html", "style.css", "script.js", "pwa.js", "intro.css", "intro.js", "intro-box.jpg", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(CORE.map((u) => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));

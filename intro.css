@@ -1,0 +1,35 @@
+/* Onefournine cinematic intro — all rules scoped to #intro */
+#intro{display:none;position:fixed;inset:0;z-index:100000;background:#000;direction:ltr;overflow:hidden}
+html.intro-on #intro{display:block}
+html.intro-on,html.intro-on body{overflow:hidden}
+#intro *{margin:0;box-sizing:border-box}
+
+/* the 1024×1536 "set" — the camera moves by transforming this element */
+#intro #stage{position:absolute;left:0;top:0;width:1024px;height:1536px;transform-origin:0 0;opacity:0;will-change:transform,opacity}
+#intro #stage>*{position:absolute;left:0;top:0}
+#intro #bg,#intro #lid img{display:block;width:1024px;height:1536px;max-width:none}
+
+/* box interior (visible once the lid lifts) */
+#intro #interior{width:1024px;height:1536px;background:#040405;clip-path:polygon(196px 698px,694px 662px,870px 876px,304px 922px)}
+#intro #ilight{position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse 430px 170px at 535px 790px,#fff 0,#fff 42%,#d3e5ff 72%,#7a98d6 100%)}
+
+/* lid: a clipped copy of the photo, hinged along the back edge */
+#intro #lidwrap{width:1024px;height:1536px;perspective:1400px;perspective-origin:535px 800px;pointer-events:none}
+#intro #lid{position:absolute;left:0;top:0;width:1024px;height:1536px;clip-path:polygon(192px 695px,698px 658px,875px 875px,872px 945px,305px 1000px,192px 905px);transform-origin:445px 676px;will-change:transform}
+#intro #lidlight{position:absolute;inset:0;opacity:0;background:linear-gradient(to top,rgba(255,255,255,.95) 0,rgba(210,228,255,.7) 22%,rgba(255,255,255,0) 60%)}
+
+/* glowing gap along the lid seam */
+#intro #seam{left:300px;top:994px;width:575px;height:4px;background:#fff;opacity:0;transform:rotate(-5deg);transform-origin:0 0;box-shadow:0 0 26px 10px rgba(255,255,255,.95),0 0 90px 30px rgba(170,205,255,.7)}
+
+#intro #fx{width:1024px;height:1536px;pointer-events:none}
+#intro #rays{left:535px;top:790px;width:3200px;height:3200px;opacity:0;mix-blend-mode:screen;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.55) 0deg 1.5deg,rgba(255,255,255,0) 1.5deg 6.5deg);-webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 25%,transparent 62%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 25%,transparent 62%)}
+#intro #beam{left:275px;top:-710px;width:520px;height:1500px;opacity:0;transform-origin:50% 100%;mix-blend-mode:screen;background:radial-gradient(ellipse 50% 100% at 50% 100%,rgba(255,255,255,.98),rgba(205,222,255,.45) 45%,transparent 75%)}
+
+/* screen-space layers */
+#intro #vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 42%,rgba(0,0,0,.78) 100%)}
+#intro #flash{position:absolute;inset:0;opacity:0;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse at 64% 26%,rgba(215,226,255,.95),rgba(110,130,205,.42) 45%,rgba(40,50,95,.2) 85%)}
+#intro #bloom{position:absolute;left:50%;top:50%;width:160vmax;height:160vmax;margin:-80vmax 0 0 -80vmax;opacity:0;pointer-events:none;background:radial-gradient(circle,#fff 0,rgba(255,255,255,.92) 14%,rgba(235,244,255,.55) 32%,rgba(255,255,255,0) 60%)}
+#intro #white{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+
+#intro #skip{position:absolute;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:5;padding:9px 18px;border:1px solid rgba(255,255,255,.3);border-radius:99px;background:rgba(10,12,20,.55);color:#e8edf8;font:600 14px Cairo,system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(6px)}
+#intro #skip:focus-visible{outline:2px solid #9fc0ff;outline-offset:3px}

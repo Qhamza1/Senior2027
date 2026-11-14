@@ -1,0 +1,18 @@
+/* ===== شريط الإعلان ===== */
+.announce { padding: 9px 14px; text-align: center; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.08em; background: var(--bar-bg); color: #fff; }
+
+/* ===== الهيدر ===== */
+.topbar { position: sticky; top: 0; z-index: 30; background: var(--topbar-bg); border-bottom: 1px solid var(--line); transition: transform 0.35s var(--ease); }
+.topbar.is-hidden { transform: translateY(-100%); }
+.bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: var(--head-h); }
+.bar-start { justify-self: start; display: flex; align-items: center; min-width: 0; margin-inline-start: -10px; }
+.search-btn { color: var(--fg); }
+.brand { justify-self: center; display: flex; align-items: center; }
+.logo-head { height: 38px; width: auto; }
+.nav { display: none; }
+.cart-btn { position: relative; justify-self: end; width: 44px; height: 44px; margin-inline-end: -10px; display: grid; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--fg); cursor: pointer; transition: background 0.2s; }
+.cart-btn:hover { background: var(--hover); }
+.count { position: absolute; top: 4px; inset-inline-end: 1px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--fg); color: var(--on-fg); font-size: 0.66rem; font-weight: 700; line-height: 17px; text-align: center; transition: transform 0.2s var(--ease), opacity 0.2s; }
+.count.is-empty { opacity: 0; transform: scale(0.5); }
+.cart-btn.bump svg { animation: bump 0.5s var(--ease); }
+@keyframes bump { 30% { transform: translateY(-3px); } 60% { transform: translateY(0); } }

@@ -1,0 +1,3 @@
+/* ===== Toast ===== */
+.toast { position: fixed; z-index: 100; inset: auto; margin: 0; border: 0; overflow: visible; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); padding: 12px 22px; transform: translate(-50%, 14px); background: var(--fg); color: var(--on-fg); font-size: 0.88rem; font-weight: 600; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.3s var(--ease); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }

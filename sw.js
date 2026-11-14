@@ -1,5 +1,5 @@
-const CACHE = "onefournine-v9";
-const CORE = ["./", "index.html", "style.css", "script.js", "pwa.js", "intro.css", "intro.js", "intro-box.jpg", "icon-192.png", "icon-512.png"];
+const CACHE = "onefournine-v12";
+const CORE = ["./", "index.html", "pwa.js", "intro-box.jpg", "icon-192.png", "icon-512.png", "base.css", "header.css", "hero.css", "catalog.css", "faq.css", "footer.css", "product-page.css", "dialogs.css", "checkout.css", "toast.css", "responsive.css", "install-bar.css", "product-extras.css", "badges.css", "select.css", "sections.css", "senior-2027.css", "theme.css", "intro.css", "menu-search.css", "i18n.js", "i18n-common.js", "i18n-store.js", "theme.js", "intro.js", "sections-default.js", "config.js", "seed-products.js", "utils.js", "select.js", "products.js", "sections-data.js", "cart.js", "product-card.js", "senior-2027.js", "catalog.js", "product-page.js", "checkout.js", "faq.js", "header.js", "search.js", "dialogs.js", "router.js", "app.js"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(CORE.map((u) => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));

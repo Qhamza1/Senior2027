@@ -1,0 +1,10 @@
+/* ===== شريط تنزيل التطبيق ===== */
+.install-bar { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: 10px; padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px; background: var(--panel); border-bottom: 1px solid var(--line); animation: ibIn .45s var(--ease); }
+.install-bar[hidden] { display: none; }
+.install-bar img { border-radius: 8px; flex: none; }
+.ib-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.ib-text strong { font-size: .84rem; }
+.ib-text span { font-size: .72rem; color: var(--muted); }
+.ib-btn { flex: none; border: 0; padding: 9px 18px; font: 700 .8rem var(--font); background: var(--fg); color: var(--on-fg); cursor: pointer; }
+.ib-close { flex: none; border: 0; background: transparent; color: var(--muted); font-size: 1.5rem; line-height: 1; padding: 4px 6px; cursor: pointer; }
+@keyframes ibIn { from { transform: translateY(-100%); opacity: 0; } to { transform: none; opacity: 1; } }

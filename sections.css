@@ -1,0 +1,10 @@
+/* ==========================================================
+   بلوكات الأقسام في الصفحة الرئيسية وصفحة القسم (css مشترك لكل الأقسام)
+   ========================================================== */
+.catalog-sec + .catalog-sec { padding-top: 0; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.sec-link { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em; color: var(--fg); text-underline-offset: 4px; white-space: nowrap; }
+.sec-link:hover { text-decoration: underline; }
+.sec-desc { margin: 6px 0 18px; color: var(--muted); max-width: 56ch; font-size: 0.95rem; }
+.sec-more { display: flex; width: fit-content; margin: 32px auto 0; padding-inline: 32px; }
+#sectionView .crumbs { padding-top: 16px; }

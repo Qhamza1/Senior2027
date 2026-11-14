@@ -1,0 +1,16 @@
+/* ==========================================================
+   قسم Senior 2027 — الترويسة المميّزة (لأي قسم عليه "عرض مميّز")
+   فاتح: لوح أسود بنص أبيض | داكن: زجاج بحدود متوهجة (في theme.css)
+   ========================================================== */
+.s27 { position: relative; overflow: hidden; isolation: isolate; display: grid; gap: 22px; align-items: end; margin-bottom: 28px; padding: 30px 22px 24px; background: var(--bar-bg); color: #fff; }
+.s27-mark { position: absolute; inset-inline-end: -4px; bottom: -34px; z-index: -1; font: 800 clamp(8rem, 44vw, 17rem)/0.8 "Manrope", sans-serif; letter-spacing: -0.06em; color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16); direction: ltr; user-select: none; pointer-events: none; }
+.s27-title { margin: 0; font: 800 clamp(2.1rem, 9vw, 3.9rem)/0.98 "Manrope", "Cairo", sans-serif; letter-spacing: -0.035em; direction: ltr; text-align: start; }
+html[dir="rtl"] .s27-title { text-align: right; }
+.s27-desc { margin: 12px 0 0; max-width: 42ch; color: rgba(255, 255, 255, 0.72); font-size: 0.98rem; line-height: 1.6; }
+.s27-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 20px; }
+.s27-count { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; color: rgba(255, 255, 255, 0.6); }
+.s27-link { min-height: 44px; display: inline-flex; align-items: center; padding-inline: 20px; border: 1px solid rgba(255, 255, 255, 0.5); color: #fff; text-decoration: none; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.06em; transition: background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.35s; }
+.s27-link:hover { background: #fff; color: #0a0a0a; }
+@media (min-width: 900px) {
+  .s27 { grid-template-columns: 1fr auto; padding: 48px 48px 40px; margin-bottom: 40px; }
+}

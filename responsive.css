@@ -1,0 +1,15 @@
+/* ===== الكمبيوتر ===== */
+@media (min-width: 900px) {
+  :root { --head-h: 68px; }
+  .bar { grid-template-columns: 1fr auto 1fr; }
+  .menu-btn { display: none; }
+  .nav { display: flex; gap: 32px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; }
+  .nav a { color: var(--fg); text-decoration: none; padding: 8px 0; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+  .nav a:hover { border-bottom-color: var(--fg); }
+  .logo-head { height: 44px; }
+  .cart-btn { margin-inline-end: 0; }
+  .products, .faq { padding-block: 72px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

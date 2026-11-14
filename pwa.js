@@ -34,7 +34,7 @@
       hide();
     } else {
       // iOS Safari: مفيش prompt تلقائي
-      sub.textContent = "اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»";
+      sub.textContent = window.I18N ? I18N.t("ib.ios") : "اضغط زر المشاركة ثم «إضافة إلى الشاشة الرئيسية»";
       btn.hidden = true;
     }
   });

@@ -1,0 +1,174 @@
+/* ==========================================================
+   ONEFOURNINE — Theme layer (Dark mode · Glass · Glow · LTR/RTL)
+   يتحمّل بعد style.css. الوضع الفاتح بيفضل زي ما هو بالظبط؛
+   كل التأثيرات هنا مربوطة بـ html[data-theme="dark"].
+   ========================================================== */
+
+/* ===== أزرار اللغة والثيم في الهيدر (الوضعين) ===== */
+.tools { display: flex; align-items: center; justify-self: end; gap: 2px; }
+.lang-btn { min-width: 40px; height: 30px; margin-inline-end: 4px; padding: 0 9px; border: 1px solid var(--line-strong); border-radius: 999px; background: transparent; color: var(--fg); font: 700 0.72rem/1 var(--font); letter-spacing: 0.06em; cursor: pointer; transition: border-color 0.25s, box-shadow 0.25s, background 0.25s, color 0.25s; }
+.lang-btn[lang="ar"] { font-family: "Cairo", var(--font); font-size: 0.84rem; letter-spacing: 0; }
+.lang-btn:hover { border-color: var(--fg); }
+.theme-btn { width: 40px; }
+.theme-btn svg { grid-area: 1 / 1; transition: transform 0.55s var(--ease), opacity 0.35s; }
+.theme-btn .i-sun { opacity: 0; transform: rotate(-90deg) scale(0.4); }
+html[data-theme="dark"] .theme-btn .i-sun { opacity: 1; transform: none; }
+html[data-theme="dark"] .theme-btn .i-moon { opacity: 0; transform: rotate(90deg) scale(0.4); }
+
+/* ===== LTR (الإنجليزية) ===== */
+html[dir="ltr"] .ltr { text-align: left; }
+html[dir="ltr"] body { letter-spacing: 0; }
+
+/* ===== انتقالات التبديل ===== */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color 0.55s var(--ease), color 0.55s var(--ease), border-color 0.55s var(--ease), box-shadow 0.55s var(--ease), fill 0.55s, stroke 0.55s, filter 0.55s, opacity 0.35s !important;
+}
+html.vt-theme::view-transition-old(root), html.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.vt-theme::view-transition-old(root) { z-index: 1; }
+html.vt-theme::view-transition-new(root) { z-index: 2; }
+@keyframes langIn { from { opacity: 0.2; } to { opacity: 1; } }
+html.lang-swap main, html.lang-swap .footer, html.lang-swap .topbar .bar { animation: langIn 0.45s var(--ease); }
+
+/* ==========================================================
+   DARK — Obsidian & Slate
+   ========================================================== */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #07080B;
+  --panel: #0E1014;
+  --surface: #14171D;
+  --soft: #11141A;
+  --soft2: #12151B;
+  --fg: #EDEFF4;
+  --on-fg: #07080B;
+  --muted: #8B92A1;
+  --line: #1F232C;
+  --line-strong: #363C4A;
+  --err: #FF7A70;
+  --hover: rgba(255, 255, 255, 0.07);
+  --btn-hover: #FFFFFF;
+  --topbar-bg: rgba(8, 9, 12, 0.62);
+  --dot-line: rgba(255, 255, 255, 0.4);
+  --pg-count-bg: rgba(10, 12, 16, 0.7);
+  --dis: #565D6B;
+  --scrim: rgba(2, 3, 6, 0.64);
+  --needs: #7B8396;
+  --bar-bg: linear-gradient(90deg, #0B0D13, #131B30 50%, #0B0D13);
+  --foot-bg: #050608;
+  --cs-panel: rgba(14, 16, 21, 0.82);
+  --accent: #8FB4FF;
+  --accent-2: #B79CFF;
+  --glow: rgba(143, 180, 255, 0.34);
+  --glow-2: rgba(183, 156, 255, 0.34);
+  --glass: rgba(22, 25, 32, 0.52);
+  --glass-strong: rgba(13, 15, 20, 0.78);
+  --glass-line: rgba(255, 255, 255, 0.09);
+}
+
+/* خلفية محيطية هادية (إضاءة زرقاء/بنفسجية خفيفة جدًا) */
+html[data-theme="dark"] body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(60vmax 42vmax at 88% -8%, rgba(143, 180, 255, 0.11), transparent 62%), radial-gradient(52vmax 40vmax at -6% 104%, rgba(183, 156, 255, 0.09), transparent 62%); }
+html[data-theme="dark"] :focus-visible { outline-color: var(--accent); }
+html[data-theme="dark"] ::selection { background: rgba(143, 180, 255, 0.32); }
+
+/* شعار الهيدر الأسود يتحوّل لأبيض */
+html[data-theme="dark"] .logo-head { filter: brightness(0) invert(1); }
+
+/* ----- زجاج ضبابي (Glassmorphism) ----- */
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .install-bar,
+html[data-theme="dark"] .sticky-atc,
+html[data-theme="dark"] dialog.modal,
+html[data-theme="dark"] dialog.sheet,
+html[data-theme="dark"] .cs-panel,
+html[data-theme="dark"] .toast {
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+}
+html[data-theme="dark"] .install-bar,
+html[data-theme="dark"] .sticky-atc,
+html[data-theme="dark"] dialog.modal,
+html[data-theme="dark"] dialog.sheet,
+html[data-theme="dark"] .toast { background: var(--glass-strong); }
+html[data-theme="dark"] .topbar { border-bottom-color: var(--glass-line); }
+html[data-theme="dark"] dialog.modal,
+html[data-theme="dark"] dialog.sheet { border: 1px solid var(--glass-line); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.75), 0 0 60px -30px var(--glow); }
+html[data-theme="dark"] .cart-foot { background: transparent; border-top-color: var(--glass-line); }
+html[data-theme="dark"] .modal-head, html[data-theme="dark"] .sheet-head { border-bottom-color: var(--glass-line); }
+html[data-theme="dark"] dialog::backdrop { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+html[data-theme="dark"] .cs-panel { border-color: var(--glass-line); box-shadow: 0 -12px 50px rgba(0, 0, 0, 0.55), 0 0 50px -28px var(--glow); }
+html[data-theme="dark"] .toast { color: var(--fg); border: 1px solid var(--glass-line); box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.7), 0 0 28px -8px var(--glow); }
+html[data-theme="dark"] .gtk,
+html[data-theme="dark"] .co-sum,
+html[data-theme="dark"] .pay-card,
+html[data-theme="dark"] .co-ship:not(.co-grand) { background: var(--glass); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+html[data-theme="dark"] .pay-alt { border-top-color: var(--glass-line); }
+html[data-theme="dark"] .co-grand { border-color: var(--glass-line); box-shadow: 0 0 30px -10px var(--glow); }
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select,
+html[data-theme="dark"] .cs-trigger,
+html[data-theme="dark"] .size,
+html[data-theme="dark"] .method,
+html[data-theme="dark"] .pay-alt .copy { background: rgba(255, 255, 255, 0.035); border-color: var(--line-strong); }
+html[data-theme="dark"] .size:disabled { background: linear-gradient(to top left, transparent calc(50% - 0.5px), var(--line-strong) 50%, transparent calc(50% + 0.5px)); border-color: var(--line); }
+
+/* ----- بطاقات المنتجات ----- */
+html[data-theme="dark"] .card { background: var(--glass); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: border-color 0.4s var(--ease), box-shadow 0.4s var(--ease), transform 0.4s var(--ease); }
+html[data-theme="dark"] .card .body { padding: 12px 12px 14px; }
+html[data-theme="dark"] .card .choose { margin-top: 8px; }
+html[data-theme="dark"] .sec-head { border-bottom: 0; }
+@media (hover: hover) {
+  html[data-theme="dark"] .card:hover { transform: translateY(-4px); border-color: rgba(143, 180, 255, 0.5); box-shadow: 0 0 0 1px rgba(143, 180, 255, 0.22), 0 18px 50px -16px var(--glow); }
+  html[data-theme="dark"] .card.is-preorder:hover { border-color: rgba(183, 156, 255, 0.6); box-shadow: 0 0 0 1px rgba(183, 156, 255, 0.28), 0 18px 50px -16px var(--glow-2); }
+}
+html[data-theme="dark"] .card:focus-visible { border-color: var(--accent); box-shadow: 0 0 24px -4px var(--glow); }
+/* الحجز المسبق: توهّج بنفسجي هادي دايمًا */
+html[data-theme="dark"] .card.is-preorder { border-color: rgba(183, 156, 255, 0.4); box-shadow: 0 0 26px -10px var(--glow-2); }
+html[data-theme="dark"] .badge.status.preorder { background: rgba(183, 156, 255, 0.16); color: #D9CCFF; border: 1px solid rgba(183, 156, 255, 0.6); box-shadow: 0 0 16px -2px var(--glow-2); animation: breathe 3.2s ease-in-out infinite; }
+html[data-theme="dark"] .badge.status.soon { background: rgba(255, 255, 255, 0.06); color: var(--fg); border-color: var(--line-strong); }
+@keyframes breathe { 50% { box-shadow: 0 0 26px 2px var(--glow-2); } }
+html[data-theme="dark"] .badge.out { background: rgba(255, 255, 255, 0.06); border-color: var(--line-strong); }
+
+/* ----- Senior 2027: كلمة الـ hero متوهجة ----- */
+html[data-theme="dark"] .hero-text .kicker { display: inline-block; padding: 6px 15px; border: 1px solid rgba(143, 180, 255, 0.5); border-radius: 999px; color: var(--accent); text-shadow: 0 0 14px var(--glow); box-shadow: 0 0 22px -6px var(--glow), inset 0 0 14px -8px var(--glow); }
+html[data-theme="dark"] .hero-text h1 { text-shadow: 0 0 46px rgba(143, 180, 255, 0.16); }
+
+/* ----- أزرار ----- */
+html[data-theme="dark"] .btn { border-color: rgba(255, 255, 255, 0.16); box-shadow: 0 10px 30px -14px var(--glow); transition: background 0.3s, color 0.3s, opacity 0.2s, box-shadow 0.4s var(--ease), border-color 0.3s, transform 0.2s var(--ease); }
+html[data-theme="dark"] .btn:hover:not(:disabled) { box-shadow: 0 0 0 1px rgba(143, 180, 255, 0.55), 0 0 28px -2px var(--glow), 0 14px 40px -14px var(--glow); }
+html[data-theme="dark"] .btn:active:not(:disabled) { transform: scale(0.988); }
+html[data-theme="dark"] .btn.ghost { background: transparent; color: var(--fg); border-color: rgba(143, 180, 255, 0.4); box-shadow: none; }
+html[data-theme="dark"] .btn.ghost:hover:not(:disabled) { background: rgba(143, 180, 255, 0.12); color: var(--fg); border-color: var(--accent); }
+html[data-theme="dark"] .btn:disabled { box-shadow: none; }
+html[data-theme="dark"] .lang-btn:hover { border-color: var(--accent); box-shadow: 0 0 18px -4px var(--glow); }
+html[data-theme="dark"] .icon-btn:hover, html[data-theme="dark"] .cart-btn:hover { box-shadow: 0 0 18px -6px var(--glow); }
+html[data-theme="dark"] .count { box-shadow: 0 0 12px var(--glow); }
+html[data-theme="dark"] .text-btn:hover { color: var(--accent); }
+
+/* ----- حقول وخيارات ----- */
+html[data-theme="dark"] input:focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] .cs-trigger:focus-visible,
+html[data-theme="dark"] .cs-trigger[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 24px -8px var(--glow); }
+html[data-theme="dark"] .size:hover:not(:disabled), html[data-theme="dark"] .cs-trigger:hover { border-color: var(--accent); }
+html[data-theme="dark"] .size.on { box-shadow: 0 0 20px -4px var(--glow); }
+html[data-theme="dark"] .method:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 24px -8px var(--glow); }
+html[data-theme="dark"] .swatch { box-shadow: inset 0 0 0 3px var(--panel); }
+html[data-theme="dark"] .swatch.on { outline-color: var(--accent); }
+html[data-theme="dark"] .sw-thumb.on, html[data-theme="dark"] button.sw-thumb.on { border-bottom-color: var(--accent); }
+html[data-theme="dark"] .stepper li.on { border-color: var(--accent); }
+html[data-theme="dark"] .pg-dots i.on { background: var(--accent); }
+html[data-theme="dark"] .cs-opt.on { box-shadow: 0 0 20px -8px var(--glow); }
+
+/* ----- الفوتر ----- */
+html[data-theme="dark"] .footer { border-top: 1px solid var(--glass-line); }
+html[data-theme="dark"] .soc:hover { box-shadow: 0 0 20px -4px var(--glow); border-color: var(--accent); }
+
+/* ----- قسم Senior 2027 (ترويسة مميّزة) ----- */
+html[data-theme="dark"] .s27 { background: linear-gradient(140deg, rgba(143, 180, 255, 0.12), rgba(183, 156, 255, 0.07) 45%, rgba(13, 15, 20, 0.7)); border: 1px solid rgba(143, 180, 255, 0.34); box-shadow: 0 0 60px -22px var(--glow), inset 0 0 40px -26px var(--glow); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+html[data-theme="dark"] .s27-title { text-shadow: 0 0 40px rgba(143, 180, 255, 0.28); }
+html[data-theme="dark"] .s27-mark { -webkit-text-stroke-color: rgba(143, 180, 255, 0.22); }
+html[data-theme="dark"] .s27-link { border-color: rgba(143, 180, 255, 0.5); }
+html[data-theme="dark"] .s27-link:hover { background: rgba(143, 180, 255, 0.16); color: #fff; box-shadow: 0 0 26px -4px var(--glow); }
+html[data-theme="dark"] .sec-link:hover { color: var(--accent); }

@@ -1,0 +1,38 @@
+/* ===== قائمة اختيار عصرية ===== */
+.cs { position: relative; }
+.cs-native { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; }
+.cs-trigger { width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; background: var(--bg); color: var(--fg); border: 1px solid var(--line-strong, var(--line)); border-radius: var(--cs-r, 0); font: inherit; font-size: 16px; text-align: start; cursor: pointer; transition: border-color .2s, box-shadow .2s; }
+.cs-trigger:hover { border-color: var(--fg); }
+.cs-trigger:focus-visible, .cs-trigger[aria-expanded="true"] { outline: none; border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+.cs-trigger:disabled { opacity: .5; cursor: not-allowed; }
+.cs-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-val.ph { color: var(--muted); }
+.cs-caret { flex: none; color: var(--muted); transition: transform .2s; }
+.cs-trigger[aria-expanded="true"] .cs-caret { transform: rotate(180deg); }
+.cs-layer { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-end; justify-content: center; }
+.cs-back { position: absolute; inset: 0; background: rgba(0, 0, 0, .5); opacity: 0; transition: opacity .18s; }
+.cs-panel { position: relative; width: 100%; max-width: 480px; max-height: 78dvh; display: flex; flex-direction: column; background: var(--cs-panel, var(--bg)); color: var(--fg); border: 1px solid var(--line); border-radius: var(--cs-r2, 0) var(--cs-r2, 0) 0 0; box-shadow: 0 -12px 40px rgba(0, 0, 0, .25); transform: translateY(100%); transition: transform .24s cubic-bezier(.22, .8, .3, 1); outline: none; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.cs-layer.in .cs-back { opacity: 1; }
+.cs-layer.in .cs-panel { transform: none; }
+.cs-grab { width: 38px; height: 4px; margin: 8px auto 0; border-radius: 4px; background: var(--line-strong, var(--line)); }
+.cs-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 18px 6px; }
+.cs-head b { font-size: .95rem; }
+.cs-x { width: 40px; height: 40px; display: grid; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--fg); font-size: 1.6rem; line-height: 1; cursor: pointer; }
+.cs-x:hover { background: var(--surface); }
+.cs-search { padding: 4px 14px 10px; }
+.cs-search input { min-height: 44px; font-size: 16px; }
+.cs-list { list-style: none; margin: 0; padding: 4px 8px 12px; overflow-y: auto; overscroll-behavior: contain; display: grid; gap: 2px; }
+.cs-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 50px; padding: 0 14px; border-radius: var(--cs-r3, 0); cursor: pointer; font-size: .95rem; }
+.cs-opt svg { opacity: 0; flex: none; }
+.cs-opt.act { background: var(--surface); }
+.cs-opt:active { background: var(--surface); }
+.cs-opt.on { background: var(--fg); color: var(--bg); font-weight: 600; }
+.cs-opt.on svg { opacity: 1; }
+.cs-empty { padding: 24px; text-align: center; color: var(--muted); }
+@media (min-width: 720px) {
+  .cs-layer { align-items: center; }
+  .cs-panel { max-height: 70dvh; border-radius: var(--cs-r2, 0); box-shadow: 0 20px 60px rgba(0, 0, 0, .3); transform: translateY(14px) scale(.98); opacity: 0; transition: transform .2s, opacity .2s; padding-bottom: 0; }
+  .cs-layer.in .cs-panel { opacity: 1; }
+  .cs-grab { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .cs-panel, .cs-back { transition: none; } }

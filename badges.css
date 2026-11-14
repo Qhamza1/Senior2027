@@ -1,0 +1,5 @@
+/* شارات الحالة */
+.badge.status { background: var(--fg); color: var(--on-fg); }
+.badge.status.soon { background: var(--panel); color: var(--fg); border: 1px solid var(--fg); }
+.avail.soon::before { background: var(--muted); }
+.avail.soon { color: var(--muted); }

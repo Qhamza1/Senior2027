@@ -1,0 +1,15 @@
+/* ===== الفوتر ===== */
+.footer { padding: 52px 0 calc(28px + env(safe-area-inset-bottom, 0px)); background: var(--foot-bg); color: #fff; }
+.foot-top { display: grid; grid-template-columns: 1fr 1fr; gap: 36px 20px; }
+.foot-brand { grid-column: 1 / -1; }
+.logo-foot { height: 48px; width: auto; filter: brightness(0) invert(1); margin-bottom: 14px; }
+.foot-tag { color: rgba(255, 255, 255, 0.62); font-size: 0.88rem; max-width: 34ch; }
+.foot-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.foot-col h4 { margin-bottom: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; color: rgba(255, 255, 255, 0.55); }
+.foot-col > a { min-height: 40px; display: inline-flex; align-items: center; color: #fff; text-decoration: none; font-size: 0.92rem; }
+.foot-col > a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.socials { display: flex; gap: 10px; margin-top: 6px; }
+.soc { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; color: #fff; text-decoration: none; transition: background 0.2s; }
+.soc:hover { background: rgba(255, 255, 255, 0.12); }
+.foot-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-top: 40px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.18); color: rgba(255, 255, 255, 0.55); font-size: 0.76rem; letter-spacing: 0.04em; }
+@media (min-width: 900px) { .foot-top { grid-template-columns: 2fr 1fr 1fr; gap: 64px; } .foot-brand { grid-column: auto; } }

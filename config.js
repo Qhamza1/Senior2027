@@ -6,7 +6,7 @@ const STORE_CONFIG = {
   footerText: "Senior 2027",
   developer: "Developed BY HAMZA",
   socialLinks: {
-    instagram: "https://www.instagram.com/q_7vmza/",
+    instagram: "https://www.instagram.com/onefour9ine/",
     tiktok: "https://www.tiktok.com/@q_7amza?_r=1&_t=ZS-97S7RofomcK"
   },
   // رقم واتساب الدولي بدون + ولا صفر (مصر = 20)
